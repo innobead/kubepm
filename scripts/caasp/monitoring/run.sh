@@ -5,9 +5,10 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-TF_DIR=~/github/caasp/skuba/ci/infra/openstack
-WORKING_DIR=~/v4test/test-cluster
-SSH_KEY=~/.ssh/id_rsa
+TF_DIR=${TF_DIR:-~/github/caasp/skuba/ci/infra/openstack}
+WORKING_DIR=${WORKING_DIR:-~/v4test/test-cluster}
+SSH_KEY=${SSH_KEY:-~/.ssh/id_rsa}
+
 TMP_DIR=tmp
 
 export KUBECONFIG="$WORKING_DIR"/admin.conf
@@ -138,6 +139,3 @@ build_certs
 install_nginx_ingress
 install_prometheus
 install_grafana
-
-
-kubectl get pods -n kube-system -l component=etcd -o json | jq -r '.items[].status.hostIP'
