@@ -27,14 +27,14 @@ function build_certs() {
 }
 
 function install_hostpath_provisioner() {
-  helm repo add rimusz https://charts.rimusz.net
+  helm repo add rimusz "https://charts.rimusz.net"
   helm upgrade --install hostpath-provisioner --namespace kube-system rimusz/hostpath-provisioner
 }
 
 function install_nginx_ingress() {
   helm upgrade --install nginx-ingress stable/nginx-ingress \
     --namespace monitoring \
-    --values nginx-ingress-config-values.yaml
+    --values manifests/nginx-ingress-config-values.yaml
 }
 
 function install_prometheus() {
@@ -53,15 +53,15 @@ function install_prometheus() {
 
   helm upgrade --install prometheus stable/prometheus \
     --namespace monitoring \
-    --values prometheus-config-values.yaml
+    --values manifests/prometheus-config-values.yaml
 }
 
 function install_grafana() {
   helm upgrade --install grafana stable/grafana \
     --namespace monitoring \
-    --values grafana-config-values.yaml
+    --values manifests/grafana-config-values.yaml
 
-  kubectl create -f grafana-datasources.yaml
+  kubectl create -f manifests/grafana-datasources.yaml
 
   pushd /tmp
   [[ -d caasp-monitoring ]] || git clone https://github.com/SUSE/caasp-monitoring

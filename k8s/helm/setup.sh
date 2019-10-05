@@ -8,7 +8,7 @@ set -o xtrace
 KUBECONFIG=${KUBECONFIG:~/.kube/config}
 
 function install_tiller() {
-  kubectl apply -f tiller-rbac.yaml
+  kubectl apply -f manifests
 
   helm init --service-account tiller
 }

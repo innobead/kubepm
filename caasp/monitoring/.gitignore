@@ -1,4 +1,3 @@
 *.crt
 *.key
-tmp
 auth

@@ -15,8 +15,8 @@ common_setup
 trap common_cleanup EXIT ERR INT TERM
 
 # Constants
-REG_VERSION=v0.16.0
-TERRAFORM_VERSION=0.11.11
+REG_VERSION=${REG_VERSION:-v0.16.0}
+TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.11}
 
 function install_terraform() {
   if ! check_cmd terraform; then
@@ -57,6 +57,11 @@ function install_ocitools() {
 
   curl -fL "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-freebsd-amd64" -o "/usr/local/bin/reg" &&
     chmod a+x "/usr/local/bin/reg"
+}
+
+function install_salt() {
+  curl -L "https://bootstrap.saltstack.com" -o bootstrap-salt.sh
+  sudo bootstrap-salt.sh
 }
 
 install_terraform

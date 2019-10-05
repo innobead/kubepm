@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
-
 function check_cmd() {
     command -v "$1" 2>/dev/null
     return $?

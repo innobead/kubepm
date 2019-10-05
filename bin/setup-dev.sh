@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
+
 # Import libs
 BIN_DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC1090
@@ -10,7 +15,9 @@ common_setup
 trap common_cleanup EXIT ERR INT TERM
 
 # Constants
-GO_VERSION=1.13.1
+GO_VERSION=${GO_VERSION:-1.13.1}
+PYTHON_VERSION=${PYTHON_VERSION:-3.7.1}
+RUBY_VERSION=${RUBY_VERSION:-2.6.4}
 
 function install_sdkman() {
   if ! check_cmd sdk; then
@@ -64,6 +71,9 @@ EOT
     sudo zypper in -y zlib-devel bzip2 libbz2-devel libffi-devel libopenssl-devel readline-devel sqlite3 sqlite3-devel xz xz-devel patch
     sudo zypper in -y python3-devel python-devel
   fi
+
+  pyenv install "$PYTHON_VERSION"
+  pyenv global "$PYTHON_VERSION"
 }
 
 function instal_ruby() {
@@ -76,6 +86,9 @@ EOT
     curl -sL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
     sudo zypper in -y gcc-c++ libmariadb-devel
   fi
+
+  rbenv install "$RUBY_VERSION"
+  rbenv global "$RUBY_VERSION"
 }
 
 install_sdkman
