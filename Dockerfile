@@ -1,3 +1,4 @@
+# This is used to verify scripts in bin folder
 FROM opensuse/tumbleweed
 WORKDIR /project
 
