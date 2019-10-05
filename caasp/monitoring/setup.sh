@@ -5,12 +5,18 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+# Import libs
+BIN_DIR=$(dirname "$(realpath "$0")")
+# shellcheck disable=SC1090
+source "${BIN_DIR}"/../../bin/libs/_common.sh
+
+# Constants
 SKUBA_TF_DIR=${SKUBA_TF_DIR:-~/github/caasp/skuba/ci/infra/openstack}
 KUBECONFIG=${KUBECONFIG:~/.kube/config}
 SSH_KEY=${SSH_KEY:-~/.ssh/id_rsa}
 
 function install_prerequites() {
-  sudo zypper install -y mozilla-nss-tools jq
+  sudo zypper in $ZYPPER_INSTALL_OPTS mozilla-nss-tools jq
 
   [[ ! -f auth ]] || htpasswd -bc auth admin admin
 }
