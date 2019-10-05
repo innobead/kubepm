@@ -8,7 +8,6 @@ set -o xtrace
 TF_DIR=${TF_DIR:-~/github/caasp/skuba/ci/infra/openstack}
 WORKING_DIR=${WORKING_DIR:-~/v4test/test-cluster}
 SSH_KEY=${SSH_KEY:-~/.ssh/id_rsa}
-
 TMP_DIR=tmp
 
 export KUBECONFIG="$WORKING_DIR"/admin.conf
@@ -103,7 +102,7 @@ function install_grafana() {
 function show_etcd_scrapconfig() {
   kubectl get pods -n kube-system -l component=etcd -o wide
 
-  cat << EOF
+  cat <<EOF
 kubectl edit -n monitoring configmap prometheus-server
 
 scrape_configs:
