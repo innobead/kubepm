@@ -26,6 +26,19 @@ function install_kind() {
   fi
 }
 
+function install_minikube() {
+  if ! grep -E --color 'vmx|svm' /proc/cpuinfo; then
+    echo "No virtualization is supported."
+    exit 1
+  fi
+
+  if ! check_cmd minikube; then
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 &&
+      chmod +x minikube &&
+      mv minikube /usr/local/bin/
+  fi
+}
+
 function install_helm() {
   if ! check_cmd helm; then
     pushd /tmp
@@ -59,6 +72,7 @@ function install_kubectl() {
 }
 
 install_kind
+install_minikube
 install_helm
 install_kubectl
 install_mkcert
