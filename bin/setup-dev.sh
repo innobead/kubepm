@@ -27,7 +27,8 @@ function install_sdkman() {
 }
 
 function install_snap() {
-  sudo zypper --no-gpg-checks in $ZYPPER_INSTALL_OPTS snapd
+  # shellcheck disable=SC2086
+  sudo zypper in $ZYPPER_INSTALL_OPTS snapd
   sudo systemctl enable snapd
   sudo systemctl start snapd
 }

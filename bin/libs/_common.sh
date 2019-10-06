@@ -17,8 +17,9 @@ function k8s_version() {
 }
 
 function add_tumbleweed_repos() {
-  sudo zypper ar --refresh "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss
-  sudo zypper ar --refresh "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy
+  sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss
+  sudo zypper ar "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy
+  sudo zypper --gpg-auto-import-keys ref
 }
 
 function remove_tumbleweed_repos() {
