@@ -90,7 +90,7 @@ EOT
   pyenv global "$PYTHON_VERSION"
 }
 
-function instal_ruby() {
+function install_ruby() {
   if ! check_cmd rbenv; then
     cat <<EOT >>"$HOME"/.bashrc
 export PATH=\$HOME/.rbenv/bin:\$PATH
@@ -114,4 +114,4 @@ install_gofish
 install_go
 install_gradle
 install_python
-instal_ruby
+install_ruby
