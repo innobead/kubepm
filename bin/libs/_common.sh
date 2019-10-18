@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 FORCE_INSTALL=${FORCE_INSTALL:-}
 ZYPPER_INSTALL_OPTS=${ZYPPER_INSTALL_OPTS:--y -l}
 
@@ -17,8 +19,8 @@ function k8s_version() {
 }
 
 function add_tumbleweed_repos() {
-  sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss
-  sudo zypper ar "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy
+  sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss || true
+  sudo zypper ar "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy || true
   sudo zypper --gpg-auto-import-keys ref
 }
 
@@ -28,7 +30,8 @@ function remove_tumbleweed_repos() {
 }
 
 function common_setup() {
-  zypper in -y sudo git curl tar gzip zip unzip which
+  # Install the general packages from the same distribution instead of factory
+  sudo zypper in -y sudo git curl tar gzip zip unzip which
 
   add_tumbleweed_repos
 }
@@ -38,5 +41,5 @@ function common_cleanup() {
 }
 
 # Setup, Teardown
-common_setup
 trap common_cleanup EXIT ERR INT TERM
+common_setup
