@@ -63,6 +63,10 @@ export GOBIN=\$HOME/go/bin
 export PATH=\$PATH:/usr/local/go/bin:\$GOBIN
 EOF
   fi
+
+  if ! check_cmd gore; then
+    go get -u github.com/motemen/gore/cmd/gore
+  fi
 }
 
 function install_python() {
