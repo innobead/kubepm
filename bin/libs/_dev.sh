@@ -52,9 +52,9 @@ function install_gradle() {
 }
 
 function install_go() {
-  if ! check_cmd go; then
+  if ! check_cmd go || "$(go version)" =~ "$GO_VERSION"; then
     pushd /tmp
-    curl -LO https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz
+    curl -LO "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz"
     tar -C /usr/local -xzf go*.tar.gz && rm go*.tar.gz
     popd
 

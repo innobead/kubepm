@@ -12,9 +12,10 @@ KUBE_VERSION=${KUBE_VERSION:-$(k8s_version)}
 KIND_VERSION=${KIND_VERSION:-v0.5.1}
 HELM_VERSION=${HELM_VERSION:-v2.14.3}
 MKCERT_VERSION=${MKCERT_VERSION:-v1.4.0}
+MINIKUBE_VERSION=${MINIKUBE_VERSION:-v1.5.0}
 
 function install_kind() {
-  if ! check_cmd kind; then
+  if ! check_cmd kind || "$(kind version)" != "$KIND_VERSION"; then
     pushd /tmp
     curl -L -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
       chmod +x kind &&
@@ -29,15 +30,15 @@ function install_minikube() {
     exit 1
   fi
 
-  if ! check_cmd minikube; then
-    curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 &&
+  if ! check_cmd minikube || "$(minikube version)" =~ "$MINIKUBE_VERSION" ; then
+    curl -Lo minikube "https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64" &&
       chmod +x minikube &&
       mv minikube /usr/local/bin/
   fi
 }
 
 function install_helm() {
-  if ! check_cmd helm; then
+  if ! check_cmd helm || "$(helm version --client)" =~ "$HELM_VERSION"; then
     pushd /tmp
     curl -LO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" &&
       tar -zxvf helm-*.tar.gz --strip-components 1 &&
@@ -58,7 +59,7 @@ function install_mkcert() {
 }
 
 function install_kubectl() {
-  if ! check_cmd kubectl; then
+  if ! check_cmd kubectl || "$(kubectl version --client)" =~ "$KUBE_VERSION"; then
     pushd /tmp
     # shellcheck disable=SC2086
     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
