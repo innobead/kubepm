@@ -4,6 +4,7 @@ set -o errexit
 
 FORCE_INSTALL=${FORCE_INSTALL:-}
 ZYPPER_INSTALL_OPTS=${ZYPPER_INSTALL_OPTS:--y -l}
+USER=$(id -un)
 
 function check_cmd() {
   if [[ -n $FORCE_INSTALL ]]; then
@@ -31,7 +32,7 @@ function remove_tumbleweed_repos() {
 
 function common_setup() {
   # Install the general packages from the same distribution instead of factory
-  sudo zypper in -y sudo git curl tar gzip zip unzip which
+  sudo zypper in -y sudo git curl tar gzip zip unzip which jq
 
   add_tumbleweed_repos
 }

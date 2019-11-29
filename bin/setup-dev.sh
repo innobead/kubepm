@@ -11,6 +11,7 @@ set -o pipefail
 set -o xtrace
 
 install_sdkman
+install_bazel
 install_snap
 install_gofish
 install_go

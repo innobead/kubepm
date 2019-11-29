@@ -12,7 +12,8 @@ REG_VERSION=${REG_VERSION:-v0.16.0}
 TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.11}
 
 function install_terraform() {
-  if ! check_cmd terraform || "$(terraform version)" =~ "$TERRAFORM_VERSION"; then
+  # shellcheck disable=SC2076
+  if ! check_cmd terraform || [[ "$(terraform version)" =~ "$TERRAFORM_VERSION" ]]; then
     pushd /tmp
     curl -LO "https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
     unzip terraform*.zip && rm terraform*.zip
@@ -32,10 +33,11 @@ function install_terraform() {
 }
 
 function install_ocitools() {
-  sudo zypper in $ZYPPER_INSTALL_OPTS podman skopeo helm-mirror
+  sudo zypper in $ZYPPER_INSTALL_OPTS podman skopeo umoci helm-mirror
 
 
-  if ! check_cmd reg || "$(reg version)" =~ "$REG_VERSION"; then
+  # shellcheck disable=SC2076
+  if ! check_cmd reg || [[ "$(reg version)" =~ "$REG_VERSION" ]]; then
     pushd /tmp
     curl -fL "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-freebsd-amd64" -o "/usr/local/bin/reg"
     chmod a+x "/usr/local/bin/reg"

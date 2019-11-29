@@ -8,9 +8,10 @@ BIN_DIR=$(dirname "$(realpath "$0")")
 source "${BIN_DIR}"/libs/_common.sh
 
 # Constants
-GO_VERSION=${GO_VERSION:-1.13.1}
+GO_VERSION=${GO_VERSION:-1.13.1}G117
 PYTHON_VERSION=${PYTHON_VERSION:-3.7.1}
 RUBY_VERSION=${RUBY_VERSION:-2.6.4}
+BAZEL_VERSION=${BAZEL_VERSION:-1.2.1}
 
 function install_sdkman() {
   if ! check_cmd sdk; then
@@ -52,7 +53,8 @@ function install_gradle() {
 }
 
 function install_go() {
-  if ! check_cmd go || "$(go version)" =~ "$GO_VERSION"; then
+  # shellcheck disable=SC2076
+  if ! check_cmd go || [[ "$(go version)" =~ "$GO_VERSION" ]]; then
     pushd /tmp
     curl -LO "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz"
     tar -C /usr/local -xzf go*.tar.gz && rm go*.tar.gz
@@ -82,7 +84,9 @@ eval "\$(pyenv virtualenv-init -)"
 EOT
 
     # https://github.com/pyenv/pyenv/wiki/common-build-problems
+    # shellcheck disable=SC2086
     sudo zypper in $ZYPPER_INSTALL_OPTS zlib-devel bzip2 libbz2-devel libffi-devel libopenssl-devel readline-devel sqlite3 sqlite3-devel xz xz-devel patch
+    # shellcheck disable=SC2086
     sudo zypper in $ZYPPER_INSTALL_OPTS python3-devel python-devel
 
   fi
@@ -102,9 +106,26 @@ EOT
     curl -sL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
     popd
 
+    # shellcheck disable=SC2086
     sudo zypper in $ZYPPER_INSTALL_OPTS gcc-c++ libmariadb-devel
   fi
 
   rbenv install "$RUBY_VERSION"
   rbenv global "$RUBY_VERSION"
+}
+
+function install_bazel() {
+  if ! check_cmd bazel || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
+    pushd /tmp
+
+    version=$(curl -sL -H "Accept: application/json" https://github.com/bazelbuild/bazel/releases/latest | jq -r ".tag_name")
+    installer=bazel-"$version"-installer-linux-x86_64.sh
+    curl -sL -O https://github.com/bazelbuild/bazel/releases/download/"$version"/"$installer"
+    chmod +x "$installer"
+
+    sudo mkdir -p /usr/local/lib/bazel && sudo chown $USER /usr/local/lib/bazel
+    ./"$installer" && rm -f "$installer"
+
+    popd
+  fi
 }

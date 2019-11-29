@@ -30,7 +30,8 @@ function install_minikube() {
     exit 1
   fi
 
-  if ! check_cmd minikube || "$(minikube version)" =~ "$MINIKUBE_VERSION" ; then
+  # shellcheck disable=SC2076
+  if ! check_cmd minikube || [[ "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
     curl -Lo minikube "https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64" &&
       chmod +x minikube &&
       mv minikube /usr/local/bin/
@@ -38,7 +39,8 @@ function install_minikube() {
 }
 
 function install_helm() {
-  if ! check_cmd helm || "$(helm version --client)" =~ "$HELM_VERSION"; then
+  # shellcheck disable=SC2076
+  if ! check_cmd helm || [[ "$(helm version --client)" =~ "$HELM_VERSION" ]]; then
     pushd /tmp
     curl -LO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" &&
       tar -zxvf helm-*.tar.gz --strip-components 1 &&
@@ -59,7 +61,8 @@ function install_mkcert() {
 }
 
 function install_kubectl() {
-  if ! check_cmd kubectl || "$(kubectl version --client)" =~ "$KUBE_VERSION"; then
+  # shellcheck disable=SC2076
+  if ! check_cmd kubectl || [[ "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
     pushd /tmp
     # shellcheck disable=SC2086
     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&

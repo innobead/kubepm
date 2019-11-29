@@ -9,9 +9,7 @@ source "${BIN_DIR}"/libs/_common.sh
 
 function install_docker() {
   if ! check_cmd docker; then
-    sudo zypper ar --refresh opensuse_factory_oss http://download.opensuse.org/tumbleweed/repo/oss/
     sudo zypper in $ZYPPER_INSTALL_OPTS docker
-    sudo zypper mr -d opensuse_factory_oss
   fi
 
   if ! check_cmd docker-compose; then
