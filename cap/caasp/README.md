@@ -1,1 +1,0 @@
-# Deploy CAP environment on CaaSP v4
