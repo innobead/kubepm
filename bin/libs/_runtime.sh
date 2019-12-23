@@ -27,6 +27,8 @@ function install_virtualbox() {
   zypper in $ZYPPER_INSTALL_OPTS virtualbox
 }
 
+# https://github.com/vagrant-libvirt/vagrant-libvirt#installation
 function install_vagrant() {
-  zypper in $ZYPPER_INSTALL_OPTS vagrant
+  zypper in $ZYPPER_INSTALL_OPTS vagrant qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+  vagrant plugin install vagrant-libvirt
 }
