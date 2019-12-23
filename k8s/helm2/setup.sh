@@ -5,10 +5,9 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-function install_tiller() {
-  kubectl apply -f manifests
+DIR=$(dirname "$(realpath "$0")")
+# shellcheck disable=SC2164
+cd "$DIR"
 
-  helm init --service-account tiller
-}
-
-install_tiller
+kubectl apply -f manifests
+helm init --service-account tiller

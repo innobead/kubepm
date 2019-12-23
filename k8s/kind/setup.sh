@@ -10,4 +10,4 @@ DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC2164
 cd "$DIR"
 
-kind create cluster --name mc --config="$(pwd)/mutliple_nodes_cluster.yaml"
+kind create cluster --name mc --config="$(pwd)/manifests/mutliple_nodes_cluster.yaml"
