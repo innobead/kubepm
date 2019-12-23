@@ -5,8 +5,6 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-KUBECONFIG=${KUBECONFIG:~/.kube/config}
-
 function install_tiller() {
   kubectl apply -f manifests
 
