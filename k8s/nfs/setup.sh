@@ -12,11 +12,11 @@ cd "$DIR"
 git clone --single-branch --branch master https://github.com/kubernetes-incubator/external-storage.git || true
 
 # shellcheck disable=SC2164
-cd external-storage/nfs/deploy/kubernetes
+pushd external-storage/nfs/deploy/kubernetes
 for f in "deployment.yaml" "rbac.yaml" "class.yaml" "claim.yaml"; do
   #  sed -i -E "s/namespace: .*/namespace: $NAMESPACE/g" $f
   kubectl create -f "$f"
 done
-cd -
+popd
 
 kubectl patch service nfs-provisioner --type merge --patch "$(cat patch.yaml)"
