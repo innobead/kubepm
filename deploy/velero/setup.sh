@@ -50,3 +50,11 @@ function cleanup() {
 }
 
 signal_handle cleanup
+
+cat <<EOF
+MINIO_POD=$(kubectl get pods -n velero -l component=minio -o jsonpath='{.items[0].metadata.name}')
+kubectl port-forward $MINIO_POD -n velero 9000:9000
+kubectl edit backupstoragelocation default -n velero
+
+Add publicUrl: http://localhost:9000 under the spec.config section.
+EOF

@@ -11,4 +11,5 @@ cd "$DIR"
 
 kubectl delete -f manifests
 kubectl delete -f manifests/nginx-app/with-pv.yaml
-
+kubectl delete namespace/velero clusterrolebinding/velero
+kubectl delete crds -l component=velero
