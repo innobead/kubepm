@@ -44,3 +44,9 @@ velero install \
   --secret-file ./credentials-velero \
   --use-volume-snapshots=false \
   --backup-location-config region=minio,s3ForcePathStyle="true",s3Url=http://minio.velero.svc:9000
+
+function cleanup() {
+  [[ -n "$f" ]] && rm -rf "$f"
+}
+
+signal_handle cleanup
