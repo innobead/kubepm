@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# https://rook.github.io/docs/rook/master/ceph-quickstart.html#deploy-the-rook-operator
 
 set -o errexit
 set -o nounset
@@ -15,6 +14,6 @@ git clone --single-branch --branch master https://github.com/rook/rook.git
 pushd rook/cluster/examples/kubernetes/ceph
 for f in "common.yaml" "operator.yaml" "cluster-test.yaml" "toolbox.yaml"; do
   #  sed -i -E "s/namespace: .*/namespace: $NAMESPACE/g" $f
-  kubectl create -f "$f"
+  kubectl delete -f "$f"
 done
 popd
