@@ -9,15 +9,19 @@ source "${BIN_DIR}"/libs/_common.sh
 
 # Constants
 KUBE_VERSION=${KUBE_VERSION:-$(k8s_version)}
-KIND_VERSION=${KIND_VERSION:-v0.6.1}
-HELM_VERSION=${HELM_VERSION:-v2.14.3}
-MKCERT_VERSION=${MKCERT_VERSION:-v1.4.0}
+KIND_VERSION=${KIND_VERSION:-}
+HELM_VERSION=${HELM_VERSION:-}
+MKCERT_VERSION=${MKCERT_VERSION:-}
 MINIKUBE_VERSION=${MINIKUBE_VERSION:-v1.5.0}
 
 function install_kind() {
+  if [[ -z $KIND_VERSION ]]; then
+    KIND_VERSION=$(git_release_version kubernetes-sigs/kind)
+  fi
+
   if ! check_cmd kind || [[ "$(kind version)" != "$KIND_VERSION" ]]; then
     pushd /tmp
-    curl -L -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
+    curl -sL -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
       chmod +x kind &&
       sudo mv kind /usr/local/bin/
     popd
@@ -30,15 +34,23 @@ function install_minikube() {
     exit 1
   fi
 
+  if [[ -z $MINIKUBE_VERSION ]]; then
+    MINIKUBE_VERSION=$(git_release_version kubernetes/minikube)
+  fi
+
   # shellcheck disable=SC2076
   if ! check_cmd minikube || [[ "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
-    curl -Lo minikube "https://storage.googleapis.com/minikube/releases/$MINIKUBE_VERSION/minikube-linux-amd64" &&
+    curl -sL -o minikube "https://github.com/kubernetes/minikube/releases/download/$MINIKUBE_VERSION/minikube-linux-amd64" &&
       chmod +x minikube &&
       sudo mv minikube /usr/local/bin/
   fi
 }
 
 function install_helm() {
+  if [[ -z $HELM_VERSION ]]; then
+    HELM_VERSION=$(git_release_version helm/helm)
+  fi
+
   # shellcheck disable=SC2076
   if ! check_cmd helm || [[ "$(helm version --client)" =~ "$HELM_VERSION" ]]; then
     pushd /tmp
@@ -51,6 +63,10 @@ function install_helm() {
 }
 
 function install_mkcert() {
+  if [[ -z $MKCERT_VERSION ]]; then
+    MKCERT_VERSION=$(git_release_version FiloSottile/mkcert)
+  fi
+
   if ! check_cmd mkcert; then
     pushd /tmp
     curl -L -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&

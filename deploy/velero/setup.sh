@@ -7,12 +7,14 @@ set -o pipefail
 set -o xtrace
 
 DIR=$(dirname "$(realpath "$0")")
+# shellcheck disable=SC1090
+source "${DIR}"/../../bin/libs/_common.sh
 # shellcheck disable=SC2164
 cd "$DIR"
 
 ./destroy.sh || true
 
-version=$(curl -sL -H "Accept: application/json" https://github.com/vmware-tanzu/velero/releases/latest | jq -r ".tag_name")
+version=$(git_release_version vmware-tanzu/velero)
 f="velero-$version-linux-amd64.tar.gz"
 
 if ! command -v velero || [[ ! "$(velero version --client-only)" =~ $version ]]; then

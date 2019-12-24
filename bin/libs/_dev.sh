@@ -118,7 +118,7 @@ function install_bazel() {
   if ! check_cmd bazel || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
     pushd /tmp
 
-    version=$(curl -sL -H "Accept: application/json" https://github.com/bazelbuild/bazel/releases/latest | jq -r ".tag_name")
+    version=$(git_release_version bazelbuild/bazel)
     installer=bazel-"$version"-installer-linux-x86_64.sh
     curl -sL -O https://github.com/bazelbuild/bazel/releases/download/"$version"/"$installer"
     chmod +x "$installer"

@@ -19,28 +19,43 @@ function k8s_version() {
   curl -sL "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
 }
 
-function add_tumbleweed_repos() {
+function git_release_version() {
+  # ex: https://github.com/vmware-tanzu/velero/releases/latest
+  value=$(curl -sL -H "Accept: application/json" "https://github.com/$1/releases/latest" | jq -r ".tag_name")
+  if [[ $value == "null" ]]; then
+    echo ""
+  else
+    echo "$value"
+  fi
+}
+
+function add_repos() {
   sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss || true
   sudo zypper ar "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy || true
   sudo zypper --gpg-auto-import-keys ref
 }
 
-function remove_tumbleweed_repos() {
+function remove_repos() {
   sudo zypper mr -d opensuse_factory_oss
   sudo zypper mr -d snappy
 }
 
-function common_setup() {
+function setup() {
   # Install the general packages from the same distribution instead of factory
   sudo zypper in -y sudo git curl tar gzip zip unzip which jq
 
-  add_tumbleweed_repos
+  add_repos
 }
 
-function common_cleanup() {
-  remove_tumbleweed_repos
+function cleanup() {
+  remove_repos
+}
+
+function signal_handle() {
+  # shellcheck disable=SC2086
+  trap $1 EXIT ERR INT TERM
 }
 
 # Setup, Teardown
-trap common_cleanup EXIT ERR INT TERM
-common_setup
+signal_handle cleanup
+setup

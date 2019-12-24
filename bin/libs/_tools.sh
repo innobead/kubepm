@@ -8,8 +8,8 @@ BIN_DIR=$(dirname "$(realpath "$0")")
 source "${BIN_DIR}"/libs/_common.sh
 
 # Constants
-REG_VERSION=${REG_VERSION:-v0.16.0}
-TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.11}
+REG_VERSION=${REG_VERSION:-}
+TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.14}
 
 function install_terraform() {
   # shellcheck disable=SC2076
@@ -23,7 +23,7 @@ function install_terraform() {
 
   if ! check_cmd ~/.terraform.d/plugins/terraform-provider-libvirt; then
     pushd /tmp
-    curl -LO "https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.5.1/terraform-provider-libvirt-0.5.1.openSUSE_Leap_15.0.x86_64.tar.gz"
+    curl -LO "https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.5.2/terraform-provider-libvirt-0.5.2.openSUSE_Leap_15.1.x86_64.tar.gz"
     tar -zxvf terraform-provider-libvirt*.tar.gz && rm terraform-provider-libvirt*.tar.gz
     popd
 
@@ -35,6 +35,9 @@ function install_terraform() {
 function install_ocitools() {
   sudo zypper in $ZYPPER_INSTALL_OPTS podman skopeo umoci helm-mirror
 
+  if [[ -z $REG_VERSION ]]; then
+    REG_VERSION=$(git_release_version genuinetools/reg)
+  fi
 
   # shellcheck disable=SC2076
   if ! check_cmd reg || [[ "$(reg version)" =~ "$REG_VERSION" ]]; then
