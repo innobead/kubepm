@@ -41,6 +41,7 @@ function remove_repos() {
 }
 
 function setup() {
+  echo "=========== setup"
   # Install the general packages from the same distribution instead of factory
   sudo zypper in -y sudo git curl tar gzip zip unzip which jq
 
@@ -48,6 +49,7 @@ function setup() {
 }
 
 function cleanup() {
+  echo "=========== cleanup"
   remove_repos
 }
 
