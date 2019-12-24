@@ -11,3 +11,4 @@ cd "$DIR"
 
 kubectl delete -f manifests
 kubectl delete -f manifests/nginx-app/with-pv.yaml
+
