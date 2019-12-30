@@ -23,5 +23,5 @@ Right now, this repo only supports openSUSE LEAP and Tumbleweed.
 
 ## Tools
 ```
-./bin/setup-dev.sh [terraform|critools|salt|...]
+./bin/setup-dev.sh [terraform|cri_tools|cert_tools|salt|...]
 ```

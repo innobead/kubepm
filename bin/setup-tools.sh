@@ -12,8 +12,9 @@ source "${BIN_DIR}"/libs/_tools.sh
 
 builtin_installers=(
   terraform
-  ocitools
+  oci_tools
   salt
+  cert_tools
 )
 
 declare -a installers

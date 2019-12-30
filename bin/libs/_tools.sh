@@ -10,6 +10,7 @@ source "${BIN_DIR}"/libs/_common.sh
 # Constants
 REG_VERSION=${REG_VERSION:-}
 TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.14}
+CFSSL_VERSION=${CFSSL_VERSION:-}
 
 function install_terraform() {
   # shellcheck disable=SC2076
@@ -31,7 +32,7 @@ function install_terraform() {
   fi
 }
 
-function install_ocitools() {
+function install_oci_tools() {
   sudo zypper in $ZYPPER_INSTALL_OPTS podman skopeo umoci helm-mirror
 
   if [[ -z $REG_VERSION ]]; then
@@ -52,4 +53,18 @@ function install_salt() {
   curl -L "https://bootstrap.saltstack.com" -o bootstrap-salt.sh
   sudo bootstrap-salt.sh
   popd
+}
+
+function install_cert_tools() {
+  if [[ -z $CFSSL_VERSION ]]; then
+    CFSSL_VERSION=$(git_release_version cloudflare/cfssl)
+  fi
+
+  if ! check_cmd cfssl || [[ ! "$(cfssl vesion)" =~ $CFSSL_VERSION ]]; then
+    files=(cfssl-bundle cfssl-certinfo cfssl-newkey cfssl-scan cfssljson cfssl mkbundle multirootca)
+
+    for f in "${files[@]}"; do
+      curl -sSL "https://github.com/cloudflare/cfssl/releases/download/$CFSSL_VERSION/$f_${CFSSL_VERSION:1}_linux_amd64" -o "/usr/local/bin/$f"
+    done
+  fi
 }
