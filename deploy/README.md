@@ -1,4 +1,4 @@
-You can use below command to install/uninstall supported <component>.
+You can use below command to install/uninstall supported `component`.
 
 ## Setup
 ```
