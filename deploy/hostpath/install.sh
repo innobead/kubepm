@@ -12,7 +12,7 @@ source "${DIR}"/../../bin/libs/_common.sh
 # shellcheck disable=SC2164
 cd "$DIR"
 
-./destroy.sh || true
+./uninstall.sh || true
 
 helm repo add rimusz https://charts.rimusz.net
 helm install hostpath-provisioner rimusz/hostpath-provisioner --version 0.2.6

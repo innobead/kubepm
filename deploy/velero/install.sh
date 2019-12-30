@@ -12,7 +12,7 @@ source "${DIR}"/../../bin/libs/_common.sh
 # shellcheck disable=SC2164
 cd "$DIR"
 
-./destroy.sh || true
+./uninstall.sh || true
 
 ./../../bin/setup-tools.sh velero
 
