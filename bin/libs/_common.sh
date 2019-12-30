@@ -49,6 +49,11 @@ function remove_repos() {
   sudo zypper mr -d snappy
 }
 
+function in_container() {
+  [[ -f "/run/containerenv" || -f "/.dockerenv" ]]
+  return $?
+}
+
 function setup() {
   # Install the general packages from the same distribution instead of factory
   sudo zypper in -y sudo git curl tar gzip zip unzip which jq

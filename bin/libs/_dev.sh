@@ -28,8 +28,11 @@ function install_sdkman() {
 function install_snap() {
   # shellcheck disable=SC2086
   sudo zypper in $ZYPPER_INSTALL_OPTS snapd
-  sudo systemctl enable snapd
-  sudo systemctl start snapd
+
+  if ! in_container; then
+    sudo systemctl enable snapd
+    sudo systemctl start snapd
+  fi
 }
 
 function install_gofish() {

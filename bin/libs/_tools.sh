@@ -33,7 +33,7 @@ function install_terraform() {
 }
 
 function install_oci_tools() {
-  sudo zypper in $ZYPPER_INSTALL_OPTS podman skopeo umoci helm-mirror
+  sudo zypper in $ZYPPER_INSTALL_OPTS podman buildah skopeo umoci helm-mirror
 
   if [[ -z $REG_VERSION ]]; then
     REG_VERSION=$(git_release_version genuinetools/reg)
