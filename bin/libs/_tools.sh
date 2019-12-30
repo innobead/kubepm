@@ -60,11 +60,11 @@ function install_cert_tools() {
     CFSSL_VERSION=$(git_release_version cloudflare/cfssl)
   fi
 
-  if ! check_cmd cfssl || [[ ! "$(cfssl vesion)" =~ $CFSSL_VERSION ]]; then
+  if ! check_cmd cfssl || [[ ! "$(cfssl vesion)" =~ ${CFSSL_VERSION:1} ]]; then
     files=(cfssl-bundle cfssl-certinfo cfssl-newkey cfssl-scan cfssljson cfssl mkbundle multirootca)
 
     for f in "${files[@]}"; do
-      curl -sSL "https://github.com/cloudflare/cfssl/releases/download/$CFSSL_VERSION/$f_${CFSSL_VERSION:1}_linux_amd64" -o "/usr/local/bin/$f"
+      curl -sSL "https://github.com/cloudflare/cfssl/releases/download/$CFSSL_VERSION/${f}_${CFSSL_VERSION:1}_linux_amd64" -o "/usr/local/bin/$f"
     done
   fi
 }
