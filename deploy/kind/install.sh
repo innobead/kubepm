@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# https://rook.github.io/docs/rook/master/ceph-quickstart.html#deploy-the-rook-operator
 
 set -o errexit
 set -o nounset

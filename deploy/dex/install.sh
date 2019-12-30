@@ -13,5 +13,6 @@ cd "$DIR"
 
 ./uninstall.sh || true
 
-helm repo add rimusz https://charts.rimusz.net
-helm install hostpath-provisioner rimusz/hostpath-provisioner --version 0.2.6
+helm install dex stable/dex
+helm install gangway stable/gangway
+helm install openldap stable/openldap

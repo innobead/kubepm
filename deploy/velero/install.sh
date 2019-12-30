@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# https://velero.io/docs/v1.2.0/contributions/minio/
 
 set -o errexit
 set -o nounset
