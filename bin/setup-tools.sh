@@ -10,11 +10,11 @@ BIN_DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC1090
 source "${BIN_DIR}"/libs/_tools.sh
 
-install_terraform
-install_ocitools
-install_salt
-
-builtin_installers=(terraform ocitools salt)
+builtin_installers=(
+  terraform
+  ocitools
+  salt
+)
 
 declare -a installers
 if [[ "$#" == "0" ]]; then

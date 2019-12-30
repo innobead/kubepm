@@ -9,7 +9,7 @@ DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC2164
 cd "$DIR"
 
-pids=$(set +o pipefail && pgrep -f "kubectl port-forward -n velero" | tr "\n" " ")
+pids=$(set +o pipefail && pgrep -f "kubectl -n velero port-forward" | tr "\n" " ")
 if [[ -n $pids ]]; then
   for pid in $pids; do
     # shellcheck disable=SC2086

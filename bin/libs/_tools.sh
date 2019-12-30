@@ -13,7 +13,7 @@ TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.14}
 
 function install_terraform() {
   # shellcheck disable=SC2076
-  if ! check_cmd terraform || [[ "$(terraform version)" =~ "$TERRAFORM_VERSION" ]]; then
+  if ! check_cmd terraform || [[ ! "$(terraform version)" =~ "$TERRAFORM_VERSION" ]]; then
     pushd /tmp
     curl -LO "https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
     unzip terraform*.zip && rm terraform*.zip
@@ -25,10 +25,9 @@ function install_terraform() {
     pushd /tmp
     curl -LO "https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.5.2/terraform-provider-libvirt-0.5.2.openSUSE_Leap_15.1.x86_64.tar.gz"
     tar -zxvf terraform-provider-libvirt*.tar.gz && rm terraform-provider-libvirt*.tar.gz
-    popd
-
     mkdir -p ~/.terraform.d/plugins
     mv terraform-provider-libvirt ~/.terraform.d/plugins
+    popd
   fi
 }
 
@@ -40,7 +39,7 @@ function install_ocitools() {
   fi
 
   # shellcheck disable=SC2076
-  if ! check_cmd reg || [[ "$(reg version)" =~ "$REG_VERSION" ]]; then
+  if ! check_cmd reg || [[ ! "$(reg version)" =~ "$REG_VERSION" ]]; then
     pushd /tmp
     curl -fL "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-freebsd-amd64" -o "/usr/local/bin/reg"
     chmod a+x "/usr/local/bin/reg"

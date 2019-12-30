@@ -29,6 +29,15 @@ function git_release_version() {
   fi
 }
 
+function zypper_pkg_version() {
+  value=$(zypper info "$1" | grep -i version | awk -F : '{print $2}' | tr -d ' ')
+  if [[ $value == "null" ]]; then
+    echo ""
+  else
+    echo "$value"
+  fi
+}
+
 function add_repos() {
   sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss || true
   sudo zypper ar "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy || true

@@ -29,7 +29,7 @@ metadata:
   labels:
     app: nginx
 spec:
-#  storageClassName: local-storage
+  storageClassName: nfs
   accessModes:
     - ReadWriteOnce
   resources:
@@ -51,33 +51,33 @@ spec:
     metadata:
       labels:
         app: nginx
-      annotations:
-        pre.hook.backup.velero.io/container: fsfreeze
-        pre.hook.backup.velero.io/command: '["/sbin/fsfreeze", "--freeze", "/var/log/nginx"]'
-        post.hook.backup.velero.io/container: fsfreeze
-        post.hook.backup.velero.io/command: '["/sbin/fsfreeze", "--unfreeze", "/var/log/nginx"]'
+    #      annotations:
+    #        pre.hook.backup.velero.io/container: fsfreeze
+    #        pre.hook.backup.velero.io/command: '["/sbin/fsfreeze", "--freeze", "/var/log/nginx"]'
+    #        post.hook.backup.velero.io/container: fsfreeze
+    #        post.hook.backup.velero.io/command: '["/sbin/fsfreeze", "--unfreeze", "/var/log/nginx"]'
     spec:
       volumes:
         - name: nginx-logs
           persistentVolumeClaim:
-           claimName: nginx-logs
+            claimName: nginx-logs
       containers:
-      - image: nginx:1.7.9
-        name: nginx
-        ports:
-        - containerPort: 80
-        volumeMounts:
-          - mountPath: "/var/log/nginx"
-            name: nginx-logs
-            readOnly: false
-      - image: velero/fsfreeze-pause:latest
-        name: fsfreeze
-        securityContext:
-          privileged: true
-        volumeMounts:
-          - mountPath: "/var/log/nginx"
-            name: nginx-logs
-            readOnly: false
+        - image: nginx:1.7.9
+          name: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: "/var/log/nginx"
+              name: nginx-logs
+              readOnly: false
+        - image: velero/fsfreeze-pause:latest
+          name: fsfreeze
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: "/var/log/nginx"
+              name: nginx-logs
+              readOnly: false
 
 ---
 apiVersion: v1
@@ -89,8 +89,8 @@ metadata:
   namespace: nginx-example
 spec:
   ports:
-  - port: 80
-    targetPort: 80
+    - port: 80
+      targetPort: 80
   selector:
     app: nginx
   type: LoadBalancer

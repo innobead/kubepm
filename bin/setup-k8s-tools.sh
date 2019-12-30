@@ -10,7 +10,14 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
-builtin_installers=(kind minikube helm kubectl mkcert)
+builtin_installers=(
+  kind
+  minikube
+  helm
+  kubectl
+  mkcert
+  velero
+)
 
 declare -a installers
 if [[ "$#" == "0" ]]; then

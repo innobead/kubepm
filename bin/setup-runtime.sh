@@ -10,7 +10,12 @@ BIN_DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC1090
 source "${BIN_DIR}"/libs/_runtime.sh
 
-builtin_installers=(docker libvirt virtualbox vagrant)
+builtin_installers=(
+  docker
+  libvirt
+  virtualbox
+  vagrant
+)
 
 declare -a installers
 if [[ "$#" == "0" ]]; then

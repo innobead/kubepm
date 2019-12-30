@@ -8,7 +8,8 @@ BIN_DIR=$(dirname "$(realpath "$0")")
 source "${BIN_DIR}"/libs/_common.sh
 
 # Constants
-GO_VERSION=${GO_VERSION:-1.13.1}G117
+GOFISH_VERSION=${GOFISH_VERSION:-}
+GO_VERSION=${GO_VERSION:-1.13.5}
 PYTHON_VERSION=${PYTHON_VERSION:-3.7.1}
 RUBY_VERSION=${RUBY_VERSION:-2.6.4}
 BAZEL_VERSION=${BAZEL_VERSION:-1.2.1}
@@ -32,7 +33,11 @@ function install_snap() {
 }
 
 function install_gofish() {
-  if ! check_cmd gofish; then
+  if [[ -z $GOFISH_VERSION ]]; then
+    GOFISH_VERSION=$(git_release_version fishworks/gofish)
+  fi
+
+  if ! check_cmd gofish || [[ ! "$(gofish version)" != "GOFISH_VERSION" ]]; then
     pushd /tmp
     curl -fsSL https://raw.githubusercontent.com/fishworks/gofish/master/scripts/install.sh | bash
     popd
@@ -45,16 +50,20 @@ function install_gofish() {
 function install_gradle() {
   if ! check_cmd gradle; then
     sdk install gradle
+  else
+    sdk upgrade gradle
   fi
 
   if ! check_cmd java; then
     sdk install java
+  else
+    sdk upgrade java
   fi
 }
 
 function install_go() {
   # shellcheck disable=SC2076
-  if ! check_cmd go || [[ "$(go version)" =~ "$GO_VERSION" ]]; then
+  if ! check_cmd go || [[ ! "$(go version)" =~ "$GO_VERSION" ]]; then
     pushd /tmp
     curl -LO "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz"
     tar -C /usr/local -xzf go*.tar.gz && rm go*.tar.gz
@@ -88,7 +97,6 @@ EOT
     sudo zypper in $ZYPPER_INSTALL_OPTS zlib-devel bzip2 libbz2-devel libffi-devel libopenssl-devel readline-devel sqlite3 sqlite3-devel xz xz-devel patch
     # shellcheck disable=SC2086
     sudo zypper in $ZYPPER_INSTALL_OPTS python3-devel python-devel
-
   fi
 
   pyenv install "$PYTHON_VERSION"
@@ -115,12 +123,15 @@ EOT
 }
 
 function install_bazel() {
-  if ! check_cmd bazel || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
+  if [[ -z $BAZEL_VERSION ]]; then
+    BAZEL_VERSION=$(git_release_version bazelbuild/bazel)
+  fi
+
+  if ! check_cmd gofish || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
     pushd /tmp
 
-    version=$(git_release_version bazelbuild/bazel)
-    installer=bazel-"$version"-installer-linux-x86_64.sh
-    curl -sL -O https://github.com/bazelbuild/bazel/releases/download/"$version"/"$installer"
+    installer=bazel-"$BAZEL_VERSION"-installer-linux-x86_64.sh
+    curl -sL -O https://github.com/bazelbuild/bazel/releases/download/"$BAZEL_VERSION"/"$installer"
     chmod +x "$installer"
 
     sudo mkdir -p /usr/local/lib/bazel && sudo chown $USER /usr/local/lib/bazel

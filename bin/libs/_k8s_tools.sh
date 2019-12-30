@@ -12,14 +12,15 @@ KUBE_VERSION=${KUBE_VERSION:-$(k8s_version)}
 KIND_VERSION=${KIND_VERSION:-}
 HELM_VERSION=${HELM_VERSION:-}
 MKCERT_VERSION=${MKCERT_VERSION:-}
-MINIKUBE_VERSION=${MINIKUBE_VERSION:-v1.5.0}
+MINIKUBE_VERSION=${MINIKUBE_VERSION:-}
+VELERO_VERSION=${VELERO_VERSION:-}
 
 function install_kind() {
   if [[ -z $KIND_VERSION ]]; then
     KIND_VERSION=$(git_release_version kubernetes-sigs/kind)
   fi
 
-  if ! check_cmd kind || [[ "$(kind version)" != "$KIND_VERSION" ]]; then
+  if ! check_cmd kind || [[ ! "$(kind version)" != "$KIND_VERSION" ]]; then
     pushd /tmp
     curl -sL -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
       chmod +x kind &&
@@ -39,11 +40,34 @@ function install_minikube() {
   fi
 
   # shellcheck disable=SC2076
-  if ! check_cmd minikube || [[ "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
+  if ! check_cmd minikube || [[ ! "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
     curl -sL -o minikube "https://github.com/kubernetes/minikube/releases/download/$MINIKUBE_VERSION/minikube-linux-amd64" &&
       chmod +x minikube &&
       sudo mv minikube /usr/local/bin/
   fi
+
+  cat <<EOF
+If using kvm2 as vm-driver, please make sure default network is NAT to avoid unability to access internet to download necessary container images.
+
+➜  ~ virsh net-dumpxml default
+<network>
+  <name>default</name>
+  <uuid>13035582-7a70-4be0-804f-c00098f39e02</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:20:b9:fc'/>
+  <domain name='default'/>
+  <ip address='192.168.100.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.100.128' end='192.168.100.254'/>
+    </dhcp>
+  </ip>
+</network>
+EOF
 }
 
 function install_helm() {
@@ -52,12 +76,15 @@ function install_helm() {
   fi
 
   # shellcheck disable=SC2076
-  if ! check_cmd helm || [[ "$(helm version --client)" =~ "$HELM_VERSION" ]]; then
+  if ! check_cmd helm || [[ ! "$(helm version --client)" =~ "$HELM_VERSION" ]]; then
     pushd /tmp
     curl -LO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" &&
       tar -zxvf helm-*.tar.gz --strip-components 1 &&
-      chmod +x helm &&
+      rm helm-*.tar.gz
+    chmod +x helm &&
       sudo mv helm /usr/local/bin/
+
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com
     popd
   fi
 }
@@ -78,12 +105,29 @@ function install_mkcert() {
 
 function install_kubectl() {
   # shellcheck disable=SC2076
-  if ! check_cmd kubectl || [[ "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
+  if ! check_cmd kubectl || [[ ! "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
     pushd /tmp
     # shellcheck disable=SC2086
     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
       chmod +x kubectl &&
       sudo mv kubectl /usr/local/bin/
     popd
+  fi
+}
+
+function install_velero() {
+  if [[ -z $VELERO_VERSION ]]; then
+    VELERO_VERSION=$(git_release_version vmware-tanzu/velero)
+  fi
+
+  if ! command -v velero || [[ ! "$(velero version --client-only)" =~ $VELERO_VERSION ]]; then
+    f="velero-$VELERO_VERSION-linux-amd64.tar.gz"
+    curl -sL -O "https://github.com/vmware-tanzu/velero/releases/download/$VELERO_VERSION/$f"
+
+    mkdir velero &&
+      tar zxvf "$f" --strip-components=1 -C velero &&
+      rm "$f"
+
+    chmod +x velero/velero && sudo mv velero/velero /usr/local/bin/
   fi
 }

@@ -13,3 +13,5 @@ source "${DIR}"/../../bin/libs/_common.sh
 cd "$DIR"
 
 kind create cluster --name mc --config="$(pwd)/manifests/mutliple-nodes-cluster.yaml"
+kubectl delete storageclass standard
+../hostpath/setup.sh

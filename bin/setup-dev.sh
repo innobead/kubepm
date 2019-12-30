@@ -10,7 +10,16 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
-builtin_installers=(sdkman bazel snap gofish go gradle python ruby)
+builtin_installers=(
+  sdkman
+  bazel
+  snap
+  gofish
+  go
+  gradle
+  python
+  ruby
+)
 
 declare -a installers
 if [[ "$#" == "0" ]]; then

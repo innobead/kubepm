@@ -11,5 +11,5 @@ source "${DIR}"/../../bin/libs/_common.sh
 # shellcheck disable=SC2164
 cd "$DIR"
 
-kubectl apply -f manifests
+kubectl create -f manifests
 helm init --service-account tiller

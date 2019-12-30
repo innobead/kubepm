@@ -10,3 +10,4 @@ DIR=$(dirname "$(realpath "$0")")
 cd "$DIR"
 
 kind delete cluster --name mc
+

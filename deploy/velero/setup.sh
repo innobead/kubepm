@@ -14,14 +14,7 @@ cd "$DIR"
 
 ./destroy.sh || true
 
-version=$(git_release_version vmware-tanzu/velero)
-f="velero-$version-linux-amd64.tar.gz"
-
-if ! command -v velero || [[ ! "$(velero version --client-only)" =~ $version ]]; then
-  curl -sL -O "https://github.com/vmware-tanzu/velero/releases/download/$version/$f"
-  mkdir velero && tar zxvf "$f" --strip-components=1 -C velero
-  chmod +x velero/velero && sudo mv velero/velero /usr/local/bin/
-fi
+./../../bin/setup-tools.sh velero
 
 kubectl create -f manifests
 kubectl create -f manifests/nginx-app/with-pv.yaml
@@ -42,18 +35,15 @@ velero install \
   --plugins velero/velero-plugin-for-aws:v1.0.0 \
   --bucket velero \
   --secret-file ./credentials-velero \
-  --use-volume-snapshots=false \
   --backup-location-config region=minio,s3ForcePathStyle="true",s3Url=http://minio.velero.svc:9000
 
-function cleanup() {
-  [[ -n "$f" ]] && rm -rf "$f"
-}
-
-signal_handle cleanup
-
-minio_pod=$(kubectl get pod -n velero -l component=minio -o jsonpath='{.items[0].metadata.name}')
+minio_pod=$(kubectl -n velero get pod -l component=minio -o jsonpath='{.items[0].metadata.name}')
 # shellcheck disable=SC2086
-kubectl wait --for=condition=Ready pod/$minio_pod -n velero
+kubectl -n velero wait --for=condition=Ready --timeout=60s pod $minio_pod
+
+nginx_pod=$(kubectl -n nginx-example get pods -o jsonpath='{.items[0].metadata.name}')
 # shellcheck disable=SC2086
-kubectl port-forward -n velero $minio_pod 9000:9000 &
-kubectl patch backupstoragelocation -n velero default --type='json' -p '[{"op": "replace", "path": "/spec/config/publicUrl", "value":"http://localhost:9000"}]'
+kubectl -n nginx-example annotate pod $nginx_pod backup.velero.io/backup-volumes=nginx-logs
+
+kubectl -n velero port-forward pod/$minio_pod 9000:9000 &
+kubectl -n velero patch backupstoragelocation default --type='json' -p '[{"op": "replace", "path": "/spec/config/publicUrl", "value":"http://localhost:9000"}]'
