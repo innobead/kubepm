@@ -35,6 +35,11 @@ function install_terraform() {
 function install_oci_tools() {
   sudo zypper in $ZYPPER_INSTALL_OPTS podman buildah skopeo umoci helm-mirror
 
+  # enable rootless container
+  sudo usermod --add-subuids 10000-75535 "$(whoami)"
+  sudo usermod --add-subgids 10000-75535 "$(whoami)"
+  podman system migrate
+
   if [[ -z $REG_VERSION ]]; then
     REG_VERSION=$(git_release_version genuinetools/reg)
   fi
@@ -42,15 +47,15 @@ function install_oci_tools() {
   # shellcheck disable=SC2076
   if ! check_cmd reg || [[ ! "$(reg version)" =~ "$REG_VERSION" ]]; then
     pushd /tmp
-    curl -sSfL "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-freebsd-amd64" -o "/usr/local/bin/reg"
-    chmod a+x "/usr/local/bin/reg"
+    curl -sSfL -o reg "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-freebsd-amd64"
+    sudo install reg /usr/local/bin
     popd
   fi
 }
 
 function install_salt() {
   pushd /tmp
-  curl -sSfL "https://bootstrap.saltstack.com" -o bootstrap-salt.sh
+  curl -sSfL -o bootstrap-salt.sh "https://bootstrap.saltstack.com"
   sudo bootstrap-salt.sh
   popd
 }

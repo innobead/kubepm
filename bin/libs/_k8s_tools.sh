@@ -23,8 +23,7 @@ function install_kind() {
   if ! check_cmd kind || [[ ! "$(kind version)" != "$KIND_VERSION" ]]; then
     pushd /tmp
     curl -sSfL -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
-      chmod +x kind &&
-      sudo mv kind /usr/local/bin/
+      sudo install kind /usr/local/bin/
     popd
   fi
 }
@@ -42,8 +41,7 @@ function install_minikube() {
   # shellcheck disable=SC2076
   if ! check_cmd minikube || [[ ! "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
     curl -sSfL -o minikube "https://github.com/kubernetes/minikube/releases/download/$MINIKUBE_VERSION/minikube-linux-amd64" &&
-      chmod +x minikube &&
-      sudo mv minikube /usr/local/bin/
+      sudo install minikube /usr/local/bin/
   fi
 
   cat <<EOF
@@ -97,8 +95,7 @@ function install_mkcert() {
   if ! check_cmd mkcert; then
     pushd /tmp
     curl -sSfL -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&
-      chmod +x mkcert &&
-      sudo mv mkcert /usr/local/bin/
+      sudo install mkcert /usr/local/bin/
     popd
   fi
 }
@@ -109,8 +106,7 @@ function install_kubectl() {
     pushd /tmp
     # shellcheck disable=SC2086
     curl -sSfLO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
-      chmod +x kubectl &&
-      sudo mv kubectl /usr/local/bin/
+      sudo install kubectl /usr/local/bin/
     popd
   fi
 }
