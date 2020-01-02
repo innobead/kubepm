@@ -16,12 +16,12 @@ function check_cmd() {
 }
 
 function k8s_version() {
-  curl -sL "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+  curl -sSfL "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
 }
 
 function git_release_version() {
   # ex: https://github.com/vmware-tanzu/velero/releases/latest
-  value=$(curl -sL -H "Accept: application/json" "https://github.com/$1/releases/latest" | jq -r ".tag_name")
+  value=$(curl -sSfL -H "Accept: application/json" "https://github.com/$1/releases/latest" | jq -r ".tag_name")
   if [[ $value == "null" ]]; then
     echo ""
   else

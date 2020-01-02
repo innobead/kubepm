@@ -22,7 +22,7 @@ function install_kind() {
 
   if ! check_cmd kind || [[ ! "$(kind version)" != "$KIND_VERSION" ]]; then
     pushd /tmp
-    curl -sL -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
+    curl -sSfL -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
       chmod +x kind &&
       sudo mv kind /usr/local/bin/
     popd
@@ -41,7 +41,7 @@ function install_minikube() {
 
   # shellcheck disable=SC2076
   if ! check_cmd minikube || [[ ! "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
-    curl -sL -o minikube "https://github.com/kubernetes/minikube/releases/download/$MINIKUBE_VERSION/minikube-linux-amd64" &&
+    curl -sSfL -o minikube "https://github.com/kubernetes/minikube/releases/download/$MINIKUBE_VERSION/minikube-linux-amd64" &&
       chmod +x minikube &&
       sudo mv minikube /usr/local/bin/
   fi
@@ -78,7 +78,7 @@ function install_helm() {
   # shellcheck disable=SC2076
   if ! check_cmd helm || [[ ! "$(helm version --client)" =~ "$HELM_VERSION" ]]; then
     pushd /tmp
-    curl -LO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" &&
+    curl -sSfLO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" &&
       tar -zxvf helm-*.tar.gz --strip-components 1 &&
       rm helm-*.tar.gz
     chmod +x helm &&
@@ -96,7 +96,7 @@ function install_mkcert() {
 
   if ! check_cmd mkcert; then
     pushd /tmp
-    curl -L -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&
+    curl -sSfL -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&
       chmod +x mkcert &&
       sudo mv mkcert /usr/local/bin/
     popd
@@ -108,7 +108,7 @@ function install_kubectl() {
   if ! check_cmd kubectl || [[ ! "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
     pushd /tmp
     # shellcheck disable=SC2086
-    curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
+    curl -sSfLO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
       chmod +x kubectl &&
       sudo mv kubectl /usr/local/bin/
     popd
@@ -122,7 +122,7 @@ function install_velero() {
 
   if ! command -v velero || [[ ! "$(velero version --client-only)" =~ $VELERO_VERSION ]]; then
     f="velero-$VELERO_VERSION-linux-amd64.tar.gz"
-    curl -sL -O "https://github.com/vmware-tanzu/velero/releases/download/$VELERO_VERSION/$f"
+    curl -sSfL -O "https://github.com/vmware-tanzu/velero/releases/download/$VELERO_VERSION/$f"
 
     mkdir velero &&
       tar zxvf "$f" --strip-components=1 -C velero &&

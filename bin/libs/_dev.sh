@@ -17,7 +17,7 @@ BAZEL_VERSION=${BAZEL_VERSION:-1.2.1}
 function install_sdkman() {
   if ! check_cmd sdk; then
     pushd /tmp
-    curl -s "https://get.sdkman.io" | bash
+    curl -sSfL "https://get.sdkman.io" | bash
     popd
   fi
 
@@ -42,7 +42,7 @@ function install_gofish() {
 
   if ! check_cmd gofish || [[ ! "$(gofish version)" != "GOFISH_VERSION" ]]; then
     pushd /tmp
-    curl -fsSL https://raw.githubusercontent.com/fishworks/gofish/master/scripts/install.sh | bash
+    curl -sSfL https://raw.githubusercontent.com/fishworks/gofish/master/scripts/install.sh | bash
     popd
 
     gofish init
@@ -68,7 +68,7 @@ function install_go() {
   # shellcheck disable=SC2076
   if ! check_cmd go || [[ ! "$(go version)" =~ "$GO_VERSION" ]]; then
     pushd /tmp
-    curl -LO "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz"
+    curl -sSfLO "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz"
     tar -C /usr/local -xzf go*.tar.gz && rm go*.tar.gz
     popd
 
@@ -86,7 +86,7 @@ EOF
 function install_python() {
   if ! check_cmd pyenv; then
     pushd /tmp
-    curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+    curl -sSfL https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
     popd
 
     cat <<EOT >>"$HOME"/.bashrc
@@ -114,7 +114,7 @@ eval "\$(rbenv init -)"
 EOT
 
     pushd /tmp
-    curl -sL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+    curl -sSfL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
     popd
 
     # shellcheck disable=SC2086
@@ -134,7 +134,7 @@ function install_bazel() {
     pushd /tmp
 
     installer=bazel-"$BAZEL_VERSION"-installer-linux-x86_64.sh
-    curl -sL -O https://github.com/bazelbuild/bazel/releases/download/"$BAZEL_VERSION"/"$installer"
+    curl -sSfL -O https://github.com/bazelbuild/bazel/releases/download/"$BAZEL_VERSION"/"$installer"
     chmod +x "$installer"
 
     sudo mkdir -p /usr/local/lib/bazel && sudo chown $USER /usr/local/lib/bazel
