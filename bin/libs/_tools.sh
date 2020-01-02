@@ -39,6 +39,7 @@ function install_oci_tools() {
   sudo usermod --add-subuids 10000-75535 "$(whoami)"
   sudo usermod --add-subgids 10000-75535 "$(whoami)"
   podman system migrate
+  podman unshare cat /proc/self/uid_map
 
   if [[ -z $REG_VERSION ]]; then
     REG_VERSION=$(git_release_version genuinetools/reg)
