@@ -20,3 +20,9 @@ for f in "common.yaml" "operator.yaml" "cluster-test.yaml" "toolbox.yaml"; do
   kubectl create -f "$f"
 done
 popd
+
+helm repo add ceph-csi https://ceph.github.io/csi-charts
+
+kubectl create ns ceph-csi
+helm install ceph-csi-rbd ceph-csi/ceph-csi-rbd -n ceph-csi
+helm install ceph-csi-rbd ceph-csi/ceph-csi-cephfs -n ceph-csi

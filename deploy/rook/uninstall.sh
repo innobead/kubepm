@@ -17,3 +17,7 @@ for f in "common.yaml" "operator.yaml" "cluster-test.yaml" "toolbox.yaml"; do
   kubectl delete -f "$f"
 done
 popd
+
+helm uninstall ceph-csi-rbd -n ceph-csi
+helm uninstall ceph-csi-rbd -n ceph-csi
+kubectl delete ns ceph-csi
