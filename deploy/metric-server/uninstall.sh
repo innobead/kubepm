@@ -9,4 +9,4 @@ DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC2164
 cd "$DIR"
 
-kubectl delete namespace metric-server
+helm uninstall metric-server
