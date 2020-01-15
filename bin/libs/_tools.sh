@@ -33,7 +33,16 @@ function install_terraform() {
 }
 
 function install_oci_tools() {
-  sudo zypper in $ZYPPER_INSTALL_OPTS podman buildah skopeo umoci helm-mirror
+  echo hello
+
+  pkgs=(
+    podman
+    buildah
+    skopeo
+    umoci
+    helm-mirror
+  )
+  zypper_pkg_install "${pkgs[@]}"
 
   # enable rootless container
   sudo usermod --add-subuids 10000-75535 "$(whoami)"
@@ -73,4 +82,13 @@ function install_cert_tools() {
       curl -sSfL "https://github.com/cloudflare/cfssl/releases/download/$CFSSL_VERSION/${f}_${CFSSL_VERSION:1}_linux_amd64" -o "/usr/local/bin/$f"
     done
   fi
+}
+
+function install_ldap_tools() {
+  zypper_cmd=in
+  if check_cmd ldapsearch; then
+    zypper_cmd=up
+  fi
+
+  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS openldap2-client
 }

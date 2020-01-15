@@ -26,8 +26,11 @@ function install_sdkman() {
 }
 
 function install_snap() {
-  # shellcheck disable=SC2086
-  sudo zypper in $ZYPPER_INSTALL_OPTS snapd
+  if ! check_cmd snap; then
+    sudo zypper in $ZYPPER_INSTALL_OPTS snapd
+  else
+    sudo zypper up $ZYPPER_INSTALL_OPTS snapd
+  fi
 
   if ! in_container; then
     sudo systemctl enable snapd

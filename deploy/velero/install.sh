@@ -13,7 +13,7 @@ cd "$DIR"
 
 ./uninstall.sh || true
 
-./../../bin/setup-tools.sh velero
+./../../bin/install-tools.sh velero
 
 kubectl create -f manifests
 kubectl create -f manifests/nginx-app/with-pv.yaml

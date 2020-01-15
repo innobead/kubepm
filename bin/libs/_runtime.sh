@@ -8,41 +8,45 @@ BIN_DIR=$(dirname "$(realpath "$0")")
 source "${BIN_DIR}"/libs/_common.sh
 
 function install_docker() {
-  if [[ -z $DOCKER_VERSION ]]; then
-    DOCKER_VERSION=$(zypper_pkg_version docker)
+  zypper_cmd=in
+  if check_cmd docker; then
+    zypper_cmd=up
   fi
-
-  if ! check_cmd docker; then
-    sudo zypper in $ZYPPER_INSTALL_OPTS docker
-  elif [[ ! "$(docker version -f '{{.Server.Version}}')" =~ $DOCKER_VERSION ]]; then
-    sudo zypper up $ZYPPER_INSTALL_OPTS docker
-  fi
+  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS docker
 
   sudo pip install --upgrade docker-compose
 }
 
 function install_libvirt() {
-  if [[ -z $LIBVERT_VERSION ]]; then
-    LIBVERT_VERSION=$(zypper_pkg_version libvirt)
+  zypper_cmd=in
+  if check_cmd virsh; then
+    zypper_cmd=up
   fi
 
-  if ! check_cmd virsh; then
-    sudo zypper in $ZYPPER_INSTALL_OPTS -t pattern kvm_server kvm_tools
-  elif [[ ! "$(virsh version | grep libvirt | sed -n '1p' | awk '{print $5}')" =~ $LIBVERT_VERSION ]]; then
-    sudo zypper up $ZYPPER_INSTALL_OPTS -t pattern kvm_server kvm_tools
-  fi
+  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS -t pattern kvm_server kvm_tools
 }
 
 function install_virtualbox() {
-  if ! check_cmd virtualbox; then
-    sudo zypper in $ZYPPER_INSTALL_OPTS virtualbox
-  else
-    sudo zypper up $ZYPPER_INSTALL_OPTS virtualbox
+  zypper_cmd=in
+  if check_cmd virtualbox; then
+    zypper_cmd=up
   fi
+
+  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS virtualbox
 }
 
 # https://github.com/vagrant-libvirt/vagrant-libvirt#installation
 function install_vagrant() {
-  sudo zypper in $ZYPPER_INSTALL_OPTS vagrant qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm
+  pkgs=(
+    vagrant
+    qemu
+    libvirt
+    libvirt-devel
+    ruby-devel
+    gcc
+    qemu-kvm
+  )
+  zypper_pkg_install "${pkgs[@]}"
+
   vagrant plugin install vagrant-libvirt
 }

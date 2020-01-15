@@ -15,6 +15,7 @@ builtin_installers=(
   oci_tools
   salt
   cert_tools
+  ldap_tools
 )
 
 declare -a installers
