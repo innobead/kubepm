@@ -17,6 +17,7 @@ builtin_installers=(
   kubectl
   mkcert
   velero
+  footloose
 )
 
 declare -a installers

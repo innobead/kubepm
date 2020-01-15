@@ -14,6 +14,7 @@ HELM_VERSION=${HELM_VERSION:-}
 MKCERT_VERSION=${MKCERT_VERSION:-}
 MINIKUBE_VERSION=${MINIKUBE_VERSION:-}
 VELERO_VERSION=${VELERO_VERSION:-}
+FOOTLOOSE_VERSION=${FOOTLOOSE_VERSION:-}
 
 function install_kind() {
   if [[ -z $KIND_VERSION ]]; then
@@ -116,7 +117,7 @@ function install_velero() {
     VELERO_VERSION=$(git_release_version vmware-tanzu/velero)
   fi
 
-  if ! command -v velero || [[ ! "$(velero version --client-only)" =~ $VELERO_VERSION ]]; then
+  if ! command -v velero || [[ "$(velero version --client-only)" != "$VELERO_VERSION" ]]; then
     f="velero-$VELERO_VERSION-linux-amd64.tar.gz"
     curl -sSfL -O "https://github.com/vmware-tanzu/velero/releases/download/$VELERO_VERSION/$f"
 
@@ -126,4 +127,15 @@ function install_velero() {
 
     chmod +x velero/velero && sudo mv velero/velero /usr/local/bin/
   fi
+}
+
+function install_footloose() {
+    if [[ -z $FOOTLOOSE_VERSION ]]; then
+      FOOTLOOSE_VERSION=$(git_release_version weaveworks/footloose)
+    fi
+
+    if ! command -v footloose || [[ ! "$(footloose version | awk '{print $2}')" =~ $FOOTLOOSE_VERSION ]]; then
+      curl -sSfL -o footloose "https://github.com/weaveworks/footloose/releases/download/$FOOTLOOSE_VERSION/footloose-$FOOTLOOSE_VERSION-linux-x86_64"
+      chmod +x footloose && sudo mv footloose /usr/local/bin
+    fi
 }

@@ -1,0 +1,15 @@
+cluster:
+  name: cluster
+  privateKey: cluster-key
+machines:
+- count: 3
+  spec:
+    backend: docker
+    image: quay.io/footloose/centos7:0.6.2
+    name: node%d
+    portMappings:
+    - containerPort: 22
+    privileged: true
+    volumes:
+      - type: volume
+        destination: /var/lib/docker
