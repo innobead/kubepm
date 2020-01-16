@@ -19,6 +19,7 @@ builtin_installers=(
   gradle
   python
   ruby
+  rust
 )
 
 declare -a installers

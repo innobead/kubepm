@@ -3,7 +3,7 @@
 # Import libs
 BIN_DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_k8s_tools.sh
+source "${BIN_DIR}"/libs/_k8s-tools.sh
 
 set -o errexit
 #set -o nounset

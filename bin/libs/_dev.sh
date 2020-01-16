@@ -146,3 +146,12 @@ function install_bazel() {
     popd
   fi
 }
+
+function install_rust() {
+  if ! check_cmd rustup; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  else
+    rustup self update
+    rustup update
+  fi
+}
