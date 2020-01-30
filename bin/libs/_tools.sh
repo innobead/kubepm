@@ -57,7 +57,7 @@ function install_oci_tools() {
   # shellcheck disable=SC2076
   if ! check_cmd reg || [[ ! "$(reg version)" =~ "$REG_VERSION" ]]; then
     pushd /tmp
-    curl -sSfL -o reg "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-freebsd-amd64"
+    curl -sSfL -o reg "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-linux-amd64"
     sudo install reg /usr/local/bin
     popd
   fi
