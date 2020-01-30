@@ -75,17 +75,29 @@ function install_helm() {
   fi
 
   # shellcheck disable=SC2076
-  if ! check_cmd helm || [[ ! "$(helm version --client)" =~ "$HELM_VERSION" ]]; then
-    pushd /tmp
-    curl -sSfLO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" &&
-      tar -zxvf helm-*.tar.gz --strip-components 1 &&
-      rm helm-*.tar.gz
-    chmod +x helm &&
-      sudo mv helm /usr/local/bin/
-
-    helm repo add stable https://kubernetes-charts.storage.googleapis.com
-    popd
+  if [[ "$HELM_VERSION" =~ ^v2 ]] && check_cmd helm2 && [[ "$(helm2 version --client)" =~ "$HELM_VERSION" ]]; then
+    return
+  elif [[ "$HELM_VERSION" =~ ^v3 ]] && check_cmd helm && [[ "$(helm version --client)" =~ "$HELM_VERSION" ]]; then
+    return
   fi
+
+  pushd /tmp
+
+  download=helm-$HELM_VERSION-linux-amd64.tar.gz
+  curl -sSfLO "https://get.helm.sh/$download" &&
+    tar -zxvf "$download" --strip-components 1 && rm "$download"
+
+  chmod +x helm
+
+  if [[ "$HELM_VERSION" =~ ^v2 ]]; then
+    sudo mv helm /usr/local/bin/helm2
+  elif [[ "$HELM_VERSION" =~ ^v3 ]]; then
+    sudo mv helm /usr/local/bin/
+  fi
+
+  helm repo add stable https://kubernetes-charts.storage.googleapis.com
+
+  popd
 }
 
 function install_mkcert() {
@@ -130,12 +142,12 @@ function install_velero() {
 }
 
 function install_footloose() {
-    if [[ -z $FOOTLOOSE_VERSION ]]; then
-      FOOTLOOSE_VERSION=$(git_release_version weaveworks/footloose)
-    fi
+  if [[ -z $FOOTLOOSE_VERSION ]]; then
+    FOOTLOOSE_VERSION=$(git_release_version weaveworks/footloose)
+  fi
 
-    if ! command -v footloose || [[ ! "$(footloose version | awk '{print $2}')" =~ $FOOTLOOSE_VERSION ]]; then
-      curl -sSfL -o footloose "https://github.com/weaveworks/footloose/releases/download/$FOOTLOOSE_VERSION/footloose-$FOOTLOOSE_VERSION-linux-x86_64"
-      chmod +x footloose && sudo mv footloose /usr/local/bin
-    fi
+  if ! command -v footloose || [[ ! "$(footloose version | awk '{print $2}')" =~ $FOOTLOOSE_VERSION ]]; then
+    curl -sSfL -o footloose "https://github.com/weaveworks/footloose/releases/download/$FOOTLOOSE_VERSION/footloose-$FOOTLOOSE_VERSION-linux-x86_64"
+    chmod +x footloose && sudo mv footloose /usr/local/bin
+  fi
 }

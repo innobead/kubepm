@@ -11,5 +11,9 @@ source "${DIR}"/../../bin/libs/_common.sh
 # shellcheck disable=SC2164
 cd "$DIR"
 
+
+./uninstall.sh || true
+HELM_VERSION=v2.16.1 ./../../bin/install-k8s-tools.sh helm
+
 kubectl create -f manifests
-helm init --service-account tiller
+helm2 init --service-account tiller
