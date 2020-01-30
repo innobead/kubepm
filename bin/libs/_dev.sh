@@ -133,7 +133,7 @@ function install_bazel() {
     BAZEL_VERSION=$(git_release_version bazelbuild/bazel)
   fi
 
-  if ! check_cmd gofish || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
+  if ! check_cmd bazel || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
     pushd /tmp
 
     installer=bazel-"$BAZEL_VERSION"-installer-linux-x86_64.sh
@@ -154,4 +154,26 @@ function install_rust() {
     rustup self update
     rustup update
   fi
+}
+
+function install_protobuf() {
+  if [[ -z $PROTOC_VERSION ]]; then
+    PROTOC_VERSION=$(git_release_version protocolbuffers/protobuf)
+  fi
+
+  # shellcheck disable=SC2076
+  if ! check_cmd protoc || [[ ! "$(protoc --version)" =~ "$PROTOC_VERSION" ]]; then
+    pushd /tmp
+
+    installer=protoc-"${PROTOC_VERSION:1}"-linux-x86_64.zip
+    curl -sSfL -O https://github.com/protocolbuffers/protobuf/releases/download/"$PROTOC_VERSION"/"$installer"
+    unzip -d protoc "$installer"
+    sudo install protoc/bin/protoc && rm -rf protoc/
+
+    popd
+  fi
+
+  install_go
+
+  go get -u github.com/golang/protobuf/protoc-gen-go
 }

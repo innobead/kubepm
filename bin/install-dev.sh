@@ -20,6 +20,7 @@ builtin_installers=(
   python
   ruby
   rust
+  protobuf
 )
 
 declare -a installers
