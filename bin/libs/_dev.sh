@@ -177,3 +177,8 @@ function install_protobuf() {
 
   go get -u github.com/golang/protobuf/protoc-gen-go
 }
+
+function install_devenv() {
+  #TODO fzf, tmux, asciinema, ...
+  :
+}

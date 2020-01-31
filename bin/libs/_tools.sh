@@ -94,11 +94,18 @@ function install_ldap_tools() {
 }
 
 function install_cloud_tools() {
+  pushd /tmp
+
   "${BIN_DIR}"/install-dev.sh python
   pip install --upgrade awscli
 
+  #TODO azure does not support non-interactive install yet
   curl -L https://aka.ms/InstallAzureCli | bash
 
   curl https://sdk.cloud.google.com > install.sh
-  bash install.sh --disable-prompts
+  # shellcheck disable=SC2086
+  bash install.sh --disable-prompts --install-dir=$INSTALL_DIR
+  rm install.sh
+
+  popd
 }

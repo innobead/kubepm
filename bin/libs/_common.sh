@@ -5,6 +5,8 @@ set -o errexit
 FORCE_INSTALL=${FORCE_INSTALL:-}
 ZYPPER_INSTALL_OPTS=${ZYPPER_INSTALL_OPTS:--y -l}
 USER=$(id -un)
+INSTALL_DIR=${INSTALL_DIR:-/usr/local/lib}
+INSTALL_BIN=${INSTALL_DIR:-/usr/local/bin}
 
 function check_cmd() {
   if [[ -n $FORCE_INSTALL ]]; then
