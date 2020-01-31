@@ -92,3 +92,13 @@ function install_ldap_tools() {
 
   sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS openldap2-client
 }
+
+function install_cloud_tools() {
+  "${BIN_DIR}"/install-dev.sh python
+  pip install --upgrade awscli
+
+  curl -L https://aka.ms/InstallAzureCli | bash
+
+  curl https://sdk.cloud.google.com > install.sh
+  bash install.sh --disable-prompts
+}

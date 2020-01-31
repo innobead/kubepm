@@ -16,6 +16,7 @@ builtin_installers=(
   salt
   cert_tools
   ldap_tools
+  cloud_tools
 )
 
 declare -a installers

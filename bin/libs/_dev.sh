@@ -105,7 +105,7 @@ EOT
     sudo zypper in $ZYPPER_INSTALL_OPTS python3-devel python-devel
   fi
 
-  pyenv install "$PYTHON_VERSION"
+  pyenv install --skip-existing "$PYTHON_VERSION"
   pyenv global "$PYTHON_VERSION"
 }
 
