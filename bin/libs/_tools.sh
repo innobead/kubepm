@@ -58,7 +58,7 @@ function install_oci_tools() {
   if ! check_cmd reg || [[ ! "$(reg version)" =~ "$REG_VERSION" ]]; then
     pushd /tmp
     curl -sSfL -o reg "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-linux-amd64"
-    sudo install reg /usr/local/bin
+    sudo install reg $INSTALL_BIN
     popd
   fi
 }
