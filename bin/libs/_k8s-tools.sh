@@ -157,6 +157,7 @@ function install_footloose() {
 # krew is a tool that makes it easy to use kubectl plugins. Ref: https://github.com/kubernetes-sigs/krew
 function install_krew() {
   install_kubectl
+
   if [[ -z $KREW_VERSION ]]; then
     KREW_VERSION=$(git_release_version kubernetes-sigs/krew)
   fi
