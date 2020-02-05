@@ -60,7 +60,7 @@ cd "$WORKDING_DIR/$INFRA"
 
 cp terraform.tfvars.json.ci.example terraform.tfvars.json
 # shellcheck disable=SC2002
-updated_vars_json=$(cat terraform.tfvars.json | jq ". | .masters=$MASTER_COUNT | .workers=$WORKER_COUNT | .authorized_keys=[\"$SSH_KEY\"] | .image_uri=\"$IMAGE_URI\"")
+updated_vars_json=$(cat terraform.tfvars.json | jq ". | .masters=$MASTER_COUNT | .workers=$WORKER_COUNT | .authorized_keys=[\"$(cat "$SSH_KEY")\"] | .image_uri=\"$IMAGE_URI\"")
 
 if [[ -n $SUSE_REG_CODE ]]; then
   updated_vars_json=$(echo "$updated_vars_json" | jq ". | .repositories={} | .lb_repositories={}")
