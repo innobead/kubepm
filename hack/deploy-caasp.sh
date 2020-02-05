@@ -23,7 +23,7 @@ WORKER_COUNT=${MASTER_COUNT:-1}
 IMAGE_URI=${IMAGE_URI:-}
 SSH_KEY=${SSH_KEY:-$HOME/.ssh/id_rsa.pub}
 
-mkdir -p "$WORKDING_DIR" | true
+mkdir -p "$WORKDING_DIR" || true
 
 # git clone skuba by release or master version
 if [[ -z $SKUBA_VERSION ]]; then
