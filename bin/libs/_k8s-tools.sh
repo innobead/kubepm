@@ -170,14 +170,18 @@ function install_krew() {
       krew update
 
     rm -rf krew*
+  fi
 
-    plugins_path=${KREW_ROOT:-$HOME/.krew}/bin
-    if [[ ! "$(cat "$HOME"/.bashrc)" =~ "$plugins_path" ]]; then
-      cat <<EOF >>"$HOME"/.bashrc
-export PATH=\$PATH:$plugins_path"
+  plugins_path=${KREW_ROOT:-$HOME/.krew}/bin
+
+  rcs=("$HOME/.bashrc" "$HOME/.zshrc")
+  for i in "${rcs[@]}"; do
+    if [[ -f "$i" ]] && [[ ! "$(cat "$i")" =~ "$plugins_path" ]]; then
+      cat <<EOF >>"$i"
+export PATH=\$PATH:$plugins_path
 EOF
     fi
-  fi
+  done
 
   popd
 }
