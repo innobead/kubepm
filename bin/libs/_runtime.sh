@@ -5,7 +5,7 @@ set -o errexit
 # Import libs
 BIN_DIR=$(dirname "$(realpath "$0")")
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_common.sh
+source "${BIN_DIR}"/libs/_init.sh
 
 function install_docker() {
   zypper_cmd=in
