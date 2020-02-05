@@ -15,6 +15,7 @@ MKCERT_VERSION=${MKCERT_VERSION:-}
 MINIKUBE_VERSION=${MINIKUBE_VERSION:-}
 VELERO_VERSION=${VELERO_VERSION:-}
 FOOTLOOSE_VERSION=${FOOTLOOSE_VERSION:-}
+KREW_VERSION=${KREW_VERSION:-}
 
 function install_kind() {
   if [[ -z $KIND_VERSION ]]; then
@@ -141,6 +142,7 @@ function install_velero() {
   fi
 }
 
+# footloose creates containers that look like virtual machines. Ref: https://github.com/weaveworks/footloose
 function install_footloose() {
   if [[ -z $FOOTLOOSE_VERSION ]]; then
     FOOTLOOSE_VERSION=$(git_release_version weaveworks/footloose)
@@ -150,4 +152,32 @@ function install_footloose() {
     curl -sSfL -o footloose "https://github.com/weaveworks/footloose/releases/download/$FOOTLOOSE_VERSION/footloose-$FOOTLOOSE_VERSION-linux-x86_64"
     chmod +x footloose && sudo mv footloose /usr/local/bin
   fi
+}
+
+# krew is a tool that makes it easy to use kubectl plugins. Ref: https://github.com/kubernetes-sigs/krew
+function install_krew() {
+  install_kubectl
+  if [[ -z $KREW_VERSION ]]; then
+    KREW_VERSION=$(git_release_version kubernetes-sigs/krew)
+  fi
+
+  pushd /tmp
+  if ! check_cmd krew || [[ ! "$(krew version)" =~ "$KUBE_VERSION" ]]; then
+    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/$KREW_VERSION/krew.{tar.gz,yaml}" &&
+      tar zxvf krew.tar.gz &&
+      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" && mv "$KREW" "$INSTALL_BIN"/krew
+    krew install --manifest=krew.yaml --archive=krew.tar.gz &&
+      krew update
+
+    rm -rf krew*
+
+    plugins_path=${KREW_ROOT:-$HOME/.krew}/bin
+    if [[ ! "$(cat "$HOME"/.bashrc)" =~ "$plugins_path" ]]; then
+      cat <<EOF >>"$HOME"/.bashrc
+export PATH=\$PATH:$plugins_path"
+EOF
+    fi
+  fi
+
+  popd
 }

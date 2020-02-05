@@ -18,6 +18,7 @@ builtin_installers=(
   mkcert
   velero
   footloose
+  krew
 )
 
 declare -a installers
