@@ -95,7 +95,6 @@ function install_python() {
     cat <<EOT >>"$HOME"/.bashrc
 export PATH=\$HOME/.pyenv/bin:\$PATH
 eval "\$(pyenv init -)"
-eval "\$(pyenv virtualenv-init -)"
 EOT
 
     # https://github.com/pyenv/pyenv/wiki/common-build-problems
@@ -153,6 +152,9 @@ function install_rust() {
   else
     rustup self update
     rustup update
+
+    source "$HOME"/.cargo/env
+    rustc --version
   fi
 }
 

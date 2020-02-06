@@ -27,13 +27,25 @@ IMAGE_URI=${IMAGE_URI:-/opt/images/$IMAGE_NAME}
 
 SSH_KEY=${SSH_KEY:-$HOME/.ssh/id_rsa.pub}
 
+function libvirt() {
+  if [[ ! -f "$IMAGE_URI" ]]; then
+    curl -sSfLO $IMAGE_DOWNLOAD_URI && mv $IMAGE_NAME "$IMAGE_URI"
+  fi
+
+  cp terraform.tfvars.json.ci.example terraform.tfvars.json
+  # shellcheck disable=SC2002
+  updated_vars_json=$(cat terraform.tfvars.json | jq ". | .masters=$MASTER_COUNT | .workers=$WORKER_COUNT | .authorized_keys=[\"$(cat "$SSH_KEY")\"] | .image_uri=\"$IMAGE_URI\"")
+
+  if [[ -n $SUSE_REG_CODE ]]; then
+    updated_vars_json=$(echo "$updated_vars_json" | jq ". | .repositories={} | .lb_repositories={}")
+    sed -i -E "s/#caasp_registry_code = .*/caasp_registry_code = \"$SUSE_REG_CODE\"/" registration.auto.tfvars
+  fi
+
+  echo "$updated_vars_json" >terraform.tfvars.json
+}
+
 # pre-flight checking
 mkdir -p "$WORKDING_DIR" || true
-mkdir -p "$(dirname "$IMAGE_URI")" || true
-
-if [[ ! -f "$IMAGE_URI" ]]; then
-  curl -sSfLO $IMAGE_DOWNLOAD_URI && mv $IMAGE_NAME "$IMAGE_URI"
-fi
 
 # git clone skuba by release or master version
 if [[ -z $SKUBA_VERSION ]]; then
@@ -48,14 +60,16 @@ if ! check_cmd skuba || [[ ! "$(skuba version)" =~ "$SKUBA_VERSION" ]]; then
     tar zxvf skuba.tar.gz --strip-components=1 -C skuba
 
   pushd skuba
-  cmd="make install"
+  cmd="git init; "
   if [[ -n $SKUBA_MODE ]]; then
-    cmd="make $SKUBA_MODE"
+    cmd+="make $SKUBA_MODE"
   elif [[ -n $SUSE_REG_CODE ]]; then
     SKUBA_MODE=release
-    cmd="make release"
+    cmd+="make release"
+  else
+    cmd+="make install"
   fi
-  $cmd
+  eval "$cmd"
 
   # shellcheck disable=SC2086
   cp -rf ci/infra/$INFRA "$WORKDING_DIR"
@@ -65,19 +79,11 @@ if ! check_cmd skuba || [[ ! "$(skuba version)" =~ "$SKUBA_VERSION" ]]; then
 fi
 popd
 
-# terraform apply
 cd "$WORKDING_DIR/$INFRA"
+mkdir -p "$(dirname "$IMAGE_URI")" || true
 
-cp terraform.tfvars.json.ci.example terraform.tfvars.json
-# shellcheck disable=SC2002
-updated_vars_json=$(cat terraform.tfvars.json | jq ". | .masters=$MASTER_COUNT | .workers=$WORKER_COUNT | .authorized_keys=[\"$(cat "$SSH_KEY")\"] | .image_uri=\"$IMAGE_URI\"")
-
-if [[ -n $SUSE_REG_CODE ]]; then
-  updated_vars_json=$(echo "$updated_vars_json" | jq ". | .repositories={} | .lb_repositories={}")
-  sed -i -E "s/#caasp_registry_code = .*/caasp_registry_code = \"$SUSE_REG_CODE\"/" registration.auto.tfvars
-fi
-
-echo "$updated_vars_json" > terraform.tfvars.json
+# create infra
+$INFRA
 
 terraform init
 terraform plan
@@ -92,20 +98,22 @@ for i in "${ips[@]}"; do
 done
 
 lb_ip=${ips[0]}
-master_ips=${ips[1:$MASTER_COUNT]}
-worker_ips=${ips[1:$WORKER_COUNT]}
+master_ips=("${ips[@]:1:$MASTER_COUNT}")
+worker_ips=("${ips[@]:$((1 + MASTER_COUNT)):$WORKER_COUNT}")
 
 # deploy CaaSP by node sequences
-# shellcheck disable=SC2086
-skuba cluster init $CLUSTER_NAME --control-plane "$lb_ip" -v 5
+if [[ ! -d "$CLUSTER_NAME" ]]; then
+  skuba cluster init "$CLUSTER_NAME" --control-plane "$lb_ip" -v 5 | tee console.log
+fi
+cd "$CLUSTER_NAME"
 
-skuba node bootstrap master -s -u sles -t "${master_ips[0]}" -v 5
-for i in ${master_ips[1:]}; do
+skuba node bootstrap master -s -u sles -t "${master_ips[0]}" -v 5 | tee -a console.log
+for i in "${master_ips[@]:1}"; do
   # shellcheck disable=SC2086
-  skuba node join master$i -r master -s -u sles -t $i"" -v 5
+  skuba node join master$i -r master -s -u sles -t $i"" -v 5 | tee -a console.log
 done
 
-for i in ${worker_ips[1:]}; do
+for i in "${worker_ips[@]}"; do
   # shellcheck disable=SC2086
-  skuba node join worker$i -r worker -s -u sles -t $i"" -v 5
+  skuba node join worker$i -r worker -s -u sles -t $i"" -v 5 | tee -a console.log
 done
