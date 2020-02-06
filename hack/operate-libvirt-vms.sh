@@ -11,7 +11,8 @@ set -o pipefail
 set -o xtrace
 
 if [[ "$#" == "0" ]]; then
-  error "Please use a virsh command for the operation you like like resume, suspend, etc by \`virsh help\`".
+  error "Please use a virsh command for the operation you like like resume, suspend, etc by \`virsh help\`." \
+    "There is a special command \`clean\` to destroy & undefine resources together."
 fi
 
 FILTER=${FILTER:-testing}
@@ -21,10 +22,15 @@ shift
 for vm in $(virsh list --all | grep "$FILTER" | awk '{print $2}'); do
   # shellcheck disable=SC2086
   # shellcheck disable=SC2068
-  virsh $command $vm $@
+  if [[ $command == "clean" ]]; then
+    virsh destroy $vm
+    vrish undefine $vm
+  else
+    virsh $command $vm $@
+  fi
 done
 
-if [[ $command == "undefine" ]]; then
+if [[ $command == "clean" ]]; then
   for vol in $(virsh vol-list --pool default | grep "$FILTER" | awk '{print $2}'); do
     # shellcheck disable=SC2086
     virsh vol-delete --pool default $vol
@@ -32,13 +38,11 @@ if [[ $command == "undefine" ]]; then
 
   for net in $(virsh net-list --all | grep "$FILTER" | awk '{print $1}'); do
     # shellcheck disable=SC2086
-    virsh net-undefine $net
+    virsh net-destroy $net
   done
-fi
 
-if [[ $command == "destroy" ]]; then
   for net in $(virsh net-list --all | grep "$FILTER" | awk '{print $1}'); do
     # shellcheck disable=SC2086
-    virsh net-destroy $net
+    virsh net-undefine $net
   done
 fi

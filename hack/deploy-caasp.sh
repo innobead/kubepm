@@ -13,17 +13,27 @@ set -o xtrace
 SKUBA_VERSION=${SKUBA_VERSION:-}
 SKUBA_MODE=${SKUBA_MODE:-} # release, staging, `empty`
 
-WORKDING_DIR=${WORKDING_DIR:-$(pwd)/_caasp}
+WORKDING_DIR=${WORKDING_DIR:-$(pwd)/.caasp}
 INFRA=${INFRA:-libvirt}
 CLUSTER_NAME=${CLUSTER_NAME:-testing}
 
 SUSE_REG_CODE=${SUSE_REG_CODE:-}
 MASTER_COUNT=${MASTER_COUNT:-1}
 WORKER_COUNT=${MASTER_COUNT:-1}
-IMAGE_URI=${IMAGE_URI:-}
+
+IMAGE_DOWNLOAD_URI="https://download.suse.de/install/SLE-15-SP1-JeOS-QU2/SLES15-SP1-JeOS.x86_64-15.1-OpenStack-Cloud-QU2.qcow2"
+IMAGE_NAME=${IMAGE_DOWNLOAD_URI##*/}
+IMAGE_URI=${IMAGE_URI:-/opt/images/$IMAGE_NAME}
+
 SSH_KEY=${SSH_KEY:-$HOME/.ssh/id_rsa.pub}
 
+# pre-flight checking
 mkdir -p "$WORKDING_DIR" || true
+mkdir -p "$(dirname "$IMAGE_URI")" || true
+
+if [[ ! -f "$IMAGE_URI" ]]; then
+  curl -sSfLO $IMAGE_DOWNLOAD_URI && mv $IMAGE_NAME "$IMAGE_URI"
+fi
 
 # git clone skuba by release or master version
 if [[ -z $SKUBA_VERSION ]]; then
@@ -76,11 +86,16 @@ terraform apply -auto-approve
 # get ips from terraform output
 mapfile -t ips < <(terraform output -json | jq -r '.[].value[]')
 
+for i in "${ips[@]}"; do
+  # shellcheck disable=SC2086
+  ssh-keygen -R $i -f "$HOME/.ssh/known_hosts"
+done
+
 lb_ip=${ips[0]}
 master_ips=${ips[1:$MASTER_COUNT]}
 worker_ips=${ips[1:$WORKER_COUNT]}
 
-# deploy by sequences
+# deploy CaaSP by node sequences
 # shellcheck disable=SC2086
 skuba cluster init $CLUSTER_NAME --control-plane "$lb_ip" -v 5
 
