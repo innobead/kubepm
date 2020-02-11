@@ -11,7 +11,6 @@ source "${BIN_DIR}"/libs/_init.sh
 KUBE_VERSION=${KUBE_VERSION:-$(k8s_version)}
 KIND_VERSION=${KIND_VERSION:-}
 HELM_VERSION=${HELM_VERSION:-}
-MKCERT_VERSION=${MKCERT_VERSION:-}
 MINIKUBE_VERSION=${MINIKUBE_VERSION:-}
 VELERO_VERSION=${VELERO_VERSION:-}
 FOOTLOOSE_VERSION=${FOOTLOOSE_VERSION:-}
@@ -101,19 +100,6 @@ function install_helm() {
   popd
 }
 
-function install_mkcert() {
-  if [[ -z $MKCERT_VERSION ]]; then
-    MKCERT_VERSION=$(git_release_version FiloSottile/mkcert)
-  fi
-
-  if ! check_cmd mkcert; then
-    pushd /tmp
-    curl -sSfL -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&
-      sudo install mkcert "$INSTALL_BIN"
-    popd
-  fi
-}
-
 function install_kubectl() {
   # shellcheck disable=SC2076
   if ! check_cmd kubectl || [[ ! "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
@@ -184,5 +170,21 @@ EOF
     fi
   done
 
+  popd
+}
+
+function install_skaffold() {
+  install_kubectl
+
+  if [[ -z $SKAFFOLD_VERSION ]]; then
+    SKAFFOLD_VERSION=$(git_release_version GoogleContainerTools/skaffold)
+  fi
+
+  pushd /tmp
+  if ! check_cmd skaffold || [[ ! "$(skaffold version)" =~ "$SKAFFOLD_VERSION" ]]; then
+    curl -fsSL -o skaffold "https://github.com/GoogleContainerTools/skaffold/releases/download/$SKAFFOLD_VERSION/skaffold-linux-amd64"
+    chmod +x skaffold
+    sudo mv skaffold /usr/local/bin
+  fi
   popd
 }

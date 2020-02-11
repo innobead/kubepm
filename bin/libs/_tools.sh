@@ -10,6 +10,7 @@ source "${BIN_DIR}"/libs/_init.sh
 # Constants
 REG_VERSION=${REG_VERSION:-}
 TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.14}
+MKCERT_VERSION=${MKCERT_VERSION:-}
 CFSSL_VERSION=${CFSSL_VERSION:-}
 
 function install_terraform() {
@@ -71,6 +72,19 @@ function install_salt() {
 }
 
 function install_cert_tools() {
+  sudo zypper in -y mozilla-nss-tools
+
+  if [[ -z $MKCERT_VERSION ]]; then
+    MKCERT_VERSION=$(git_release_version FiloSottile/mkcert)
+  fi
+
+  if ! check_cmd mkcert; then
+    pushd /tmp
+    curl -sSfL -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&
+      sudo install mkcert "$INSTALL_BIN"
+    popd
+  fi
+
   if [[ -z $CFSSL_VERSION ]]; then
     CFSSL_VERSION=$(git_release_version cloudflare/cfssl)
   fi

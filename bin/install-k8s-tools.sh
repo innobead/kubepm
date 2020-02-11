@@ -15,10 +15,10 @@ builtin_installers=(
   minikube
   helm
   kubectl
-  mkcert
   velero
   footloose
   krew
+  skaffold
 )
 
 declare -a installers
