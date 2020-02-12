@@ -3,7 +3,7 @@
 set -o errexit
 
 KU_SKIP_SETUP=${KU_SKIP_SETUP:-false}
-KU_FORCE_INSTALL=${KU_FORCE_INSTALL:-}
+KU_FORCE_INSTALL=${KU_FORCE_INSTALL:-false}
 KU_ZYPPER_INSTALL_OPTS=${KU_ZYPPER_INSTALL_OPTS:--y -l}
 KU_USER=$(id -un)
 KU_INSTALL_DIR=${KU_INSTALL_DIR:-/usr/local/lib}
@@ -11,7 +11,7 @@ KU_INSTALL_BIN=${KU_INSTALL_BIN:-/usr/local/bin}
 KU_TMP_DIR=${KU_TMP_DIR:-/tmp}
 
 function check_cmd() {
-  if [[ -n $KU_FORCE_INSTALL ]]; then
+  if [[ $KU_FORCE_INSTALL != "false" ]]; then
     return 1
   fi
 

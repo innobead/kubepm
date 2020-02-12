@@ -10,7 +10,7 @@ Right now, this repo only supports openSUSE LEAP and Tumbleweed.
 ```
 ➜  k8s-utils git:(master) ✗ ./bin/install-dev.sh      
 Configurable Variables:
- KU_FORCE_INSTALL=
+ KU_FORCE_INSTALL=false
  KU_INSTALL_BIN=/usr/local/bin
  KU_INSTALL_DIR=/usr/local/lib
  KU_SKIP_SETUP=false
@@ -23,7 +23,7 @@ Command Usage:
 
 ➜  k8s-utils git:(master) ✗ ./bin/install-k8s-tools.sh          
 Configurable Variables:
- KU_FORCE_INSTALL=
+ KU_FORCE_INSTALL=false
  KU_INSTALL_BIN=/usr/local/bin
  KU_INSTALL_DIR=/usr/local/lib
  KU_SKIP_SETUP=false
@@ -36,7 +36,7 @@ Command Usage:
 
 ➜  k8s-utils git:(master) ✗ ./bin/install-runtime.sh  
 Configurable Variables:
- KU_FORCE_INSTALL=
+ KU_FORCE_INSTALL=false
  KU_INSTALL_BIN=/usr/local/bin
  KU_INSTALL_DIR=/usr/local/lib
  KU_SKIP_SETUP=false
@@ -49,7 +49,7 @@ Command Usage:
 
 ➜  k8s-utils git:(master) ✗ ./bin/install-tools.sh           
 Configurable Variables:
- KU_FORCE_INSTALL=
+ KU_FORCE_INSTALL=false
  KU_INSTALL_BIN=/usr/local/bin
  KU_INSTALL_DIR=/usr/local/lib
  KU_SKIP_SETUP=false
