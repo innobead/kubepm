@@ -3,9 +3,9 @@
 set -o errexit
 
 # Import libs
-BIN_DIR=$(dirname "$(realpath "$0")")
+LIB_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_init.sh
+source "${LIB_DIR}"/_init.sh
 
 # Constants
 REG_VERSION=${REG_VERSION:-}
@@ -16,7 +16,7 @@ CFSSL_VERSION=${CFSSL_VERSION:-}
 function install_terraform() {
   # shellcheck disable=SC2076
   if ! check_cmd terraform || [[ ! "$(terraform version)" =~ "$TERRAFORM_VERSION" ]]; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfLO "https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
     unzip terraform*.zip && rm terraform*.zip
     chmod +x terraform && sudo mv terraform /usr/local/bin
@@ -24,7 +24,7 @@ function install_terraform() {
   fi
 
   if ! check_cmd ~/.terraform.d/plugins/terraform-provider-libvirt; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfLO "https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.5.2/terraform-provider-libvirt-0.5.2.openSUSE_Leap_15.1.x86_64.tar.gz"
     tar -zxvf terraform-provider-libvirt*.tar.gz && rm terraform-provider-libvirt*.tar.gz
     mkdir -p ~/.terraform.d/plugins
@@ -57,15 +57,15 @@ function install_oci_tools() {
 
   # shellcheck disable=SC2076
   if ! check_cmd reg || [[ ! "$(reg version)" =~ "$REG_VERSION" ]]; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfL -o reg "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-linux-amd64"
-    sudo install reg $INSTALL_BIN
+    sudo install reg $KU_INSTALL_BIN
     popd
   fi
 }
 
 function install_salt() {
-  pushd /tmp
+  pushd "${KU_TMP_DIR}"
   curl -sSfL -o bootstrap-salt.sh "https://bootstrap.saltstack.com"
   sudo bootstrap-salt.sh
   popd
@@ -79,9 +79,9 @@ function install_cert_tools() {
   fi
 
   if ! check_cmd mkcert; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfL -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&
-      sudo install mkcert "$INSTALL_BIN"
+      sudo install mkcert "$KU_INSTALL_BIN"
     popd
   fi
 
@@ -104,11 +104,11 @@ function install_ldap_tools() {
     zypper_cmd=up
   fi
 
-  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS openldap2-client
+  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS openldap2-client
 }
 
 function install_cloud_tools() {
-  pushd /tmp
+  pushd "${KU_TMP_DIR}"
 
   "${BIN_DIR}"/install-dev.sh python
   pip install --upgrade awscli
@@ -118,7 +118,7 @@ function install_cloud_tools() {
 
   curl https://sdk.cloud.google.com > install.sh
   # shellcheck disable=SC2086
-  bash install.sh --disable-prompts --install-dir=$INSTALL_DIR
+  bash install.sh --disable-prompts --install-dir=$KU_INSTALL_DIR
   rm install.sh
 
   popd

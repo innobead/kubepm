@@ -15,11 +15,11 @@ cd "$DIR"
 version=$(git_release_version vmware-tanzu/sonobuoy)
 
 if ! command -v sonobuoy || [[ "$(sonobuoy version --short)" != "$version" ]]; then
-  pushd /tmp
+  pushd "${KU_TMP_DIR}"
 
   curl -sSfL "https://github.com/vmware-tanzu/sonobuoy/releases/download/${version}/sonobuoy_${version:1}_linux_amd64.tar.gz" -o sonobuoy.tar.gz
   mkdir sonobuoy && tar zxvf sonobuoy.tar.gz -C sonobuoy
-  install sonobuoy/sonobuoy "$INSTALL_BIN" && rm -rf sonobuoy*
+  install sonobuoy/sonobuoy "$KU_INSTALL_BIN" && rm -rf sonobuoy*
 
   popd
 fi

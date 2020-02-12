@@ -3,20 +3,20 @@
 set -o errexit
 
 # Import libs
-BIN_DIR=$(dirname "$(realpath "$0")")
+LIB_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_init.sh
+source "${LIB_DIR}"/_init.sh
 
 # Constants
 GOFISH_VERSION=${GOFISH_VERSION:-}
-GO_VERSION=${GO_VERSION:-1.13.5}
+GO_VERSION=${GO_VERSION:-}
 PYTHON_VERSION=${PYTHON_VERSION:-3.7.1}
 RUBY_VERSION=${RUBY_VERSION:-2.6.4}
-BAZEL_VERSION=${BAZEL_VERSION:-1.2.1}
+BAZEL_VERSION=${BAZEL_VERSION:-}
 
 function install_sdkman() {
   if ! check_cmd sdk; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfL "https://get.sdkman.io" | bash
     popd
   fi
@@ -27,9 +27,9 @@ function install_sdkman() {
 
 function install_snap() {
   if ! check_cmd snap; then
-    sudo zypper in $ZYPPER_INSTALL_OPTS snapd
+    sudo zypper in $KU_ZYPPER_INSTALL_OPTS snapd
   else
-    sudo zypper up $ZYPPER_INSTALL_OPTS snapd
+    sudo zypper up $KU_ZYPPER_INSTALL_OPTS snapd
   fi
 
   if ! in_container; then
@@ -44,7 +44,7 @@ function install_gofish() {
   fi
 
   if ! check_cmd gofish || [[ ! "$(gofish version)" != "GOFISH_VERSION" ]]; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfL https://raw.githubusercontent.com/fishworks/gofish/master/scripts/install.sh | bash
     popd
 
@@ -70,7 +70,7 @@ function install_gradle() {
 function install_go() {
   # shellcheck disable=SC2076
   if ! check_cmd go || [[ ! "$(go version)" =~ "$GO_VERSION" ]]; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfLO "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz"
     tar -C /usr/local -xzf go*.tar.gz && rm go*.tar.gz
     popd
@@ -88,7 +88,7 @@ EOF
 
 function install_python() {
   if ! check_cmd pyenv; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfL https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
     popd
 
@@ -99,9 +99,9 @@ EOT
 
     # https://github.com/pyenv/pyenv/wiki/common-build-problems
     # shellcheck disable=SC2086
-    sudo zypper in $ZYPPER_INSTALL_OPTS zlib-devel bzip2 libbz2-devel libffi-devel libopenssl-devel readline-devel sqlite3 sqlite3-devel xz xz-devel patch
+    sudo zypper in $KU_ZYPPER_INSTALL_OPTS zlib-devel bzip2 libbz2-devel libffi-devel libopenssl-devel readline-devel sqlite3 sqlite3-devel xz xz-devel patch
     # shellcheck disable=SC2086
-    sudo zypper in $ZYPPER_INSTALL_OPTS python3-devel python-devel
+    sudo zypper in $KU_ZYPPER_INSTALL_OPTS python3-devel python-devel
   fi
 
   pyenv install --skip-existing "$PYTHON_VERSION"
@@ -115,12 +115,12 @@ export PATH=\$HOME/.rbenv/bin:\$PATH
 eval "\$(rbenv init -)"
 EOT
 
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
     popd
 
     # shellcheck disable=SC2086
-    sudo zypper in $ZYPPER_INSTALL_OPTS gcc-c++ libmariadb-devel
+    sudo zypper in $KU_ZYPPER_INSTALL_OPTS gcc-c++ libmariadb-devel
   fi
 
   rbenv install "$RUBY_VERSION"
@@ -133,13 +133,13 @@ function install_bazel() {
   fi
 
   if ! check_cmd bazel || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
 
     installer=bazel-"$BAZEL_VERSION"-installer-linux-x86_64.sh
     curl -sSfL -O https://github.com/bazelbuild/bazel/releases/download/"$BAZEL_VERSION"/"$installer"
     chmod +x "$installer"
 
-    sudo mkdir -p /usr/local/lib/bazel && sudo chown $USER /usr/local/lib/bazel
+    sudo mkdir -p /usr/local/lib/bazel && sudo chown $KU_USER /usr/local/lib/bazel
     ./"$installer" && rm -f "$installer"
 
     popd
@@ -163,21 +163,24 @@ function install_protobuf() {
     PROTOC_VERSION=$(git_release_version protocolbuffers/protobuf)
   fi
 
+  install_go
+
   # shellcheck disable=SC2076
-  if ! check_cmd protoc || [[ ! "$(protoc --version)" =~ "$PROTOC_VERSION" ]]; then
-    pushd /tmp
+  if ! check_cmd protoc || [[ ! "$(protoc --version)" =~ "${PROTOC_VERSION:1}" ]]; then
+    pushd "${KU_TMP_DIR}"
 
     installer=protoc-"${PROTOC_VERSION:1}"-linux-x86_64.zip
     curl -sSfL -O https://github.com/protocolbuffers/protobuf/releases/download/"$PROTOC_VERSION"/"$installer"
     unzip -d protoc "$installer"
-    sudo install protoc/bin/protoc && rm -rf protoc/
+    sudo install protoc/bin/protoc "$KU_INSTALL_BIN" && rm -rf protoc*
 
+    go get -u github.com/golang/protobuf/protoc-gen-go
     popd
   fi
+}
 
-  install_go
-
-  go get -u github.com/golang/protobuf/protoc-gen-go
+function install_jwt() {
+  go install github.com/dgrijalva/jwt-go/cmd/jwt
 }
 
 function install_devenv() {

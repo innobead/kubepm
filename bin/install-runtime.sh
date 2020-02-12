@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
+BIN_DIR=$(dirname "$(realpath "$0")")
+
+# shellcheck disable=SC1090
+source "${BIN_DIR}"/libs/_common.sh
+
 set -o errexit
 #set -o nounset
 set -o pipefail
-set -o xtrace
-
-# Import libs
-BIN_DIR=$(dirname "$(realpath "$0")")
-# shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_runtime.sh
+#set -o xtrace
 
 builtin_installers=(
   docker
@@ -16,24 +16,22 @@ builtin_installers=(
   virtualbox
   vagrant
 )
-
 declare -a installers
-if [[ "$#" == "0" ]]; then
+
+case "$1" in
+help | "")
+  help "${builtin_installers[@]}"
+  exit 0
+  ;;
+all)
   installers+=("${builtin_installers[@]}")
-fi
+  ;;
+*)
+  mapfile -t installers < <(collect_pkgs "${builtin_installers[*]}" "${*}" | sed 's/\s/\n/g')
+  ;;
+esac
 
-while (($#)); do
-  # shellcheck disable=SC2076
-  # shellcheck disable=SC2199
-  if [[ "${builtin_installers[@]}" =~ "$1" ]]; then
-    installers+=("${installers[@]}" "$1")
-  else
-    echo "Invalid install option ($1)"
-  fi
+# shellcheck disable=SC1090
+source "${BIN_DIR}"/libs/_runtime.sh
 
-  shift
-done
-
-for i in "${installers[@]}"; do
-  $"install_$i"
-done
+install_pkgs "${installers[@]}"

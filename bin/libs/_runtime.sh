@@ -3,16 +3,16 @@
 set -o errexit
 
 # Import libs
-BIN_DIR=$(dirname "$(realpath "$0")")
+LIB_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_init.sh
+source "${LIB_DIR}"/_init.sh
 
 function install_docker() {
   zypper_cmd=in
   if check_cmd docker; then
     zypper_cmd=up
   fi
-  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS docker
+  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS docker
 
   sudo pip install --upgrade docker-compose
 }
@@ -23,7 +23,7 @@ function install_libvirt() {
     zypper_cmd=up
   fi
 
-  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS -t pattern kvm_server kvm_tools
+  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS -t pattern kvm_server kvm_tools
 }
 
 function install_virtualbox() {
@@ -32,7 +32,7 @@ function install_virtualbox() {
     zypper_cmd=up
   fi
 
-  sudo zypper $zypper_cmd $ZYPPER_INSTALL_OPTS virtualbox
+  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS virtualbox
 }
 
 # https://github.com/vagrant-libvirt/vagrant-libvirt#installation

@@ -3,9 +3,11 @@
 set -o errexit
 
 # Import libs
-BIN_DIR=$(dirname "$(realpath "$0")")
+LIB_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_init.sh
+source "${LIB_DIR}"/_init.sh
+# shellcheck disable=SC1090
+source "${LIB_DIR}"/_dev.sh
 
 # Constants
 KUBE_VERSION=${KUBE_VERSION:-$(k8s_version)}
@@ -15,6 +17,9 @@ MINIKUBE_VERSION=${MINIKUBE_VERSION:-}
 VELERO_VERSION=${VELERO_VERSION:-}
 FOOTLOOSE_VERSION=${FOOTLOOSE_VERSION:-}
 KREW_VERSION=${KREW_VERSION:-}
+SKAFFOLD_VERSION=${SKAFFOLD_VERSION:-}
+CTRLTOOLS_VERSION=${CTRLTOOLS_VERSION:-}
+KUSTOMIZE_VERSION=${KUSTOMIZE_VERSION:-}
 
 function install_kind() {
   if [[ -z $KIND_VERSION ]]; then
@@ -22,9 +27,9 @@ function install_kind() {
   fi
 
   if ! check_cmd kind || [[ ! "$(kind version)" != "$KIND_VERSION" ]]; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     curl -sSfL -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
-      sudo install kind "$INSTALL_BIN"
+      sudo install kind "$KU_INSTALL_BIN"
     popd
   fi
 }
@@ -42,7 +47,7 @@ function install_minikube() {
   # shellcheck disable=SC2076
   if ! check_cmd minikube || [[ ! "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
     curl -sSfL -o minikube "https://github.com/kubernetes/minikube/releases/download/$MINIKUBE_VERSION/minikube-linux-amd64" &&
-      sudo install minikube "$INSTALL_BIN"
+      sudo install minikube "$KU_INSTALL_BIN"
   fi
 
   cat <<EOF
@@ -81,7 +86,7 @@ function install_helm() {
     return
   fi
 
-  pushd /tmp
+  pushd "${KU_TMP_DIR}"
 
   download=helm-$HELM_VERSION-linux-amd64.tar.gz
   curl -sSfLO "https://get.helm.sh/$download" &&
@@ -103,10 +108,10 @@ function install_helm() {
 function install_kubectl() {
   # shellcheck disable=SC2076
   if ! check_cmd kubectl || [[ ! "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
-    pushd /tmp
+    pushd "${KU_TMP_DIR}"
     # shellcheck disable=SC2086
     curl -sSfLO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
-      sudo install kubectl "$INSTALL_BIN"
+      sudo install kubectl "$KU_INSTALL_BIN"
     popd
   fi
 }
@@ -148,11 +153,11 @@ function install_krew() {
     KREW_VERSION=$(git_release_version kubernetes-sigs/krew)
   fi
 
-  pushd /tmp
+  pushd "${KU_TMP_DIR}"
   if ! check_cmd krew || [[ ! "$(krew version)" =~ "$KUBE_VERSION" ]]; then
     curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/$KREW_VERSION/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
-      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" && mv "$KREW" "$INSTALL_BIN"/krew
+      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" && mv "$KREW" "$KU_INSTALL_BIN"/krew
     krew install --manifest=krew.yaml --archive=krew.tar.gz &&
       krew update
 
@@ -180,11 +185,76 @@ function install_skaffold() {
     SKAFFOLD_VERSION=$(git_release_version GoogleContainerTools/skaffold)
   fi
 
-  pushd /tmp
+  pushd "${KU_TMP_DIR}"
   if ! check_cmd skaffold || [[ ! "$(skaffold version)" =~ "$SKAFFOLD_VERSION" ]]; then
     curl -fsSL -o skaffold "https://github.com/GoogleContainerTools/skaffold/releases/download/$SKAFFOLD_VERSION/skaffold-linux-amd64"
     chmod +x skaffold
     sudo mv skaffold /usr/local/bin
   fi
+  popd
+}
+
+function install_kubebuilder() {
+  install_go
+
+  if [[ -z $KUBEBUILDER_VERSION ]]; then
+    KUBEBUILDER_VERSION=$(git_release_version kubernetes-sigs/kubebuilder)
+  fi
+
+  if ! check_cmd kubebuilder || [[ ! "$(kubebuilder version)" =~ "${KUBEBUILDER_VERSION:1}" ]]; then
+    os=$(go env GOOS)
+    arch=$(go env GOARCH)
+
+    pushd "${KU_TMP_DIR}"
+    mkdir kubebuilder || true
+    curl -fsSL "https://github.com/kubernetes-sigs/kubebuilder/releases/download/${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION:1}_${os}_${arch}.tar.gz" |
+      tar zxv --strip-components=1 -C kubebuilder
+
+    # kubebuilder also exists with other executables
+    #  ➜  ~ ll ~/Downloads/kubebuilder_2.2.0_linux_amd64/bin/ | awk '{if(NF>2){print $9}}'
+    #etcd
+    #kube-apiserver
+    #kubebuilder
+    #kubectl
+    install kubebuilder/bin/kubebuilder "$KU_INSTALL_BIN" && rm -rf kubebuilder
+
+    popd
+  fi
+}
+
+function install_controllertools() {
+  install_go
+
+  if [[ -z $CTRLTOOLS_VERSION ]]; then
+    CTRLTOOLS_VERSION=$(git_release_version kubernetes-sigs/controller-tools)
+  fi
+
+  go get sigs.k8s.io/controller-tools/cmd/controller-gen@"$CTRLTOOLS_VERSION"
+}
+
+function install_kustomize() {
+  install_go
+
+  if [[ -z $KUSTOMIZE_VERSION ]]; then
+    KUSTOMIZE_VERSION=$(
+      curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |
+        grep browser_download |
+        grep linux |
+        cut -d '"' -f 4 |
+        grep /kustomize/v |
+        sort |
+        tail -n 1 |
+        xargs basename |
+        awk -F _ '{print $2}'
+    )
+  fi
+
+  pushd "${KU_TMP_DIR}"
+
+  if ! check_cmd kustomize || [[ ! "$(kustomize version --short)" =~ "${KUSTOMIZE_VERSION:1}" ]]; then
+    curl -sSfL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" | tar zxv
+    install kustomize "$KU_INSTALL_BIN" && rm -rf kustomize
+  fi
+
   popd
 }

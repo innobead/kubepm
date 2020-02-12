@@ -3,9 +3,9 @@
 set -o errexit
 
 # Import libs
-BIN_DIR=$(dirname "$(realpath "$0")")
+LIB_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_common.sh
+source "${LIB_DIR}"/_common.sh
 
 function add_repos() {
   sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss || true
@@ -19,15 +19,19 @@ function remove_repos() {
 }
 
 function setup() {
-  # Install the general packages from the same distribution instead of factory
-  pkgs=(sudo git curl tar gzip zip unzip which jq)
-  zypper_pkg_install "${pkgs[@]}"
+  if [[ $KU_SKIP_SETUP != "true" ]]; then
+    # Install the general packages from the same distribution instead of factory
+    pkgs=(sudo git curl tar gzip zip unzip which jq)
+    zypper_pkg_install "${pkgs[@]}"
 
-  add_repos
+    add_repos
+  fi
 }
 
 function cleanup() {
-  remove_repos
+  if [[ $KU_SKIP_SETUP != "true" ]]; then
+    remove_repos
+  fi
 }
 
 # Setup, Teardown
