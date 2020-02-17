@@ -12,7 +12,7 @@ function install_docker() {
   if check_cmd docker; then
     zypper_cmd=up
   fi
-  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS docker
+  sudo zypper $zypper_cmd "$KU_ZYPPER_INSTALL_OPTS" docker
 
   sudo pip install --upgrade docker-compose
 }
@@ -23,7 +23,9 @@ function install_libvirt() {
     zypper_cmd=up
   fi
 
-  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS -t pattern kvm_server kvm_tools
+  sudo zypper $zypper_cmd "$KU_ZYPPER_INSTALL_OPTS" -t pattern kvm_server kvm_tools
+
+  virt-host-validate qemu
 }
 
 function install_virtualbox() {
@@ -32,7 +34,7 @@ function install_virtualbox() {
     zypper_cmd=up
   fi
 
-  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS virtualbox
+  sudo zypper $zypper_cmd "$KU_ZYPPER_INSTALL_OPTS" virtualbox
 }
 
 # https://github.com/vagrant-libvirt/vagrant-libvirt#installation
