@@ -15,6 +15,7 @@ builtin_installers=(
   libvirt
   virtualbox
   vagrant
+  lxc
 )
 declare -a installers
 

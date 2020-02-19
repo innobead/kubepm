@@ -52,3 +52,13 @@ function install_vagrant() {
 
   vagrant plugin install vagrant-libvirt
 }
+
+function install_lxc() {
+    pkgs=(
+      lxc
+      # lxd
+    )
+    zypper_pkg_install "${pkgs[@]}"
+
+    sudo snap install --classic lxd
+}
