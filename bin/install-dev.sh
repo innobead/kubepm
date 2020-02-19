@@ -21,6 +21,7 @@ builtin_installers=(
   rust
   protobuf
   jwt
+  hub
 )
 declare -a installers
 

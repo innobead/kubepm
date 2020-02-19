@@ -175,12 +175,33 @@ function install_protobuf() {
     sudo install protoc/bin/protoc "$KU_INSTALL_BIN" && rm -rf protoc*
 
     go get -u github.com/golang/protobuf/protoc-gen-go
+
     popd
   fi
 }
 
 function install_jwt() {
   go install github.com/dgrijalva/jwt-go/cmd/jwt
+}
+
+function install_hub() {
+  if [[ -z $HUB_VERSION ]]; then
+    HUB_VERSION=$(git_release_version github/hub)
+  fi
+
+  install_go
+
+  if ! check_cmd hub || [[ ! "$(hub version)" =~ "${HUB_VERSION}" ]]; then
+    pushd "${KU_TMP_DIR}"
+
+    curl -sSfLO "https://github.com/github/hub/releases/download/${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION:1}.tgz"
+    mkdir hub &&
+      tar zxvf hub*.tgz  --strip-components=1 -C hub &&
+      ./hub/install &&
+      rm -rf hub*
+
+    popd
+  fi
 }
 
 function install_devenv() {
