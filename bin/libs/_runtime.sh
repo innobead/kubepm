@@ -61,4 +61,9 @@ function install_lxc() {
     zypper_pkg_install "${pkgs[@]}"
 
     sudo snap install --classic lxd
+    sudo usermod -a -G lxd "${KU_USER}"
+    sudo newgrp lxd
+
+    sudo systemctl enable snap.lxd.daemon.service
+    sudo systemctl start snap.lxd.daemon.service
 }
