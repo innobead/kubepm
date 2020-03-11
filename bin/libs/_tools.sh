@@ -116,10 +116,35 @@ function install_cloud_tools() {
   #TODO azure does not support non-interactive install yet
   curl -L https://aka.ms/InstallAzureCli | bash
 
-  curl https://sdk.cloud.google.com > install.sh
+  curl https://sdk.cloud.google.com >install.sh
   # shellcheck disable=SC2086
   bash install.sh --disable-prompts --install-dir=$KU_INSTALL_DIR
   rm install.sh
 
   popd
+}
+
+function install_circleci() {
+  curl -fLSs https://circle.ci/cli | bash
+}
+
+function install_skaffold() {
+  install_kubectl
+
+  if [[ -z $SKAFFOLD_VERSION ]]; then
+    SKAFFOLD_VERSION=$(git_release_version GoogleContainerTools/skaffold)
+  fi
+
+  pushd "${KU_TMP_DIR}"
+  if ! check_cmd skaffold || [[ ! "$(skaffold version)" =~ "$SKAFFOLD_VERSION" ]]; then
+    curl -fsSL -o skaffold "https://github.com/GoogleContainerTools/skaffold/releases/download/$SKAFFOLD_VERSION/skaffold-linux-amd64"
+    chmod +x skaffold
+    sudo mv skaffold /usr/local/bin
+  fi
+  popd
+}
+
+function install_jx() {
+    # TODO
+    :
 }

@@ -16,6 +16,7 @@ builtin_installers=(
   virtualbox
   vagrant
   lxc
+  podman
 )
 declare -a installers
 

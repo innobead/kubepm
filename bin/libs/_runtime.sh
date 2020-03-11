@@ -67,8 +67,8 @@ function install_lxc() {
   # when running `lxc list image images:` and encoutering a url unresolved issue, please reload snap.lxd.deamon. It's because network ready after snap for some reason.
   # sudo systemctl reload snap.lxd.daemon
 
-  cat<<EOF
-Use `lxc help` to learn how to manage container and images.
+  cat <<EOF
+Use $(lxc help) to learn how to manage container and images.
 
 lxc init: Please relogin to take effect all installation, then execute below commands.
 
@@ -115,4 +115,17 @@ Commands:
   lxc exec opensuse -- free -h
   lxc delete opensuse --force
 EOF
+}
+
+function install_podman() {
+  if ! check_cmd podman; then
+    sudo zypper in $KU_ZYPPER_INSTALL_OPTS podman
+  else
+    sudo zypper up $KU_ZYPPER_INSTALL_OPTS podman
+  fi
+
+  if ! in_container; then
+    sudo systemctl enable snapd
+    sudo systemctl start snapd
+  fi
 }

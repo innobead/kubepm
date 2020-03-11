@@ -18,7 +18,6 @@ builtin_installers=(
   velero
   footloose
   krew
-  skaffold
   kubebuilder
   controllertools
   kustomize

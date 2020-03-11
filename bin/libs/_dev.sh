@@ -68,10 +68,12 @@ function install_gradle() {
 }
 
 function install_go() {
+  GO_VERSION=$(git_release_version golang/go)
+
   # shellcheck disable=SC2076
   if ! check_cmd go || [[ ! "$(go version)" =~ "$GO_VERSION" ]]; then
     pushd "${KU_TMP_DIR}"
-    curl -sSfLO "https://dl.google.com/go/go$GO_VERSION.linux-amd64.tar.gz"
+    curl -sSfLO "https://dl.google.com/go/$GO_VERSION.linux-amd64.tar.gz"
     tar -C /usr/local -xzf go*.tar.gz && rm go*.tar.gz
     popd
 
@@ -84,6 +86,14 @@ EOF
   if ! check_cmd gore; then
     go get -u github.com/motemen/gore/cmd/gore
   fi
+
+  # install golang tools
+  go get -u \
+    golang.org/x/tools/... \
+    golang.org/x/lint/golint
+
+  # install goexec
+  go get -u github.com/shurcooL/goexec
 }
 
 function install_python() {
@@ -196,12 +206,17 @@ function install_hub() {
 
     curl -sSfLO "https://github.com/github/hub/releases/download/${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION:1}.tgz"
     mkdir hub &&
-      tar zxvf hub*.tgz  --strip-components=1 -C hub &&
+      tar zxvf hub*.tgz --strip-components=1 -C hub &&
       ./hub/install &&
       rm -rf hub*
 
     popd
   fi
+}
+
+function install_bcrypt() {
+  install_go
+  go get -u github.com/bitnami/bcrypt-cli
 }
 
 function install_devenv() {

@@ -178,22 +178,6 @@ EOF
   popd
 }
 
-function install_skaffold() {
-  install_kubectl
-
-  if [[ -z $SKAFFOLD_VERSION ]]; then
-    SKAFFOLD_VERSION=$(git_release_version GoogleContainerTools/skaffold)
-  fi
-
-  pushd "${KU_TMP_DIR}"
-  if ! check_cmd skaffold || [[ ! "$(skaffold version)" =~ "$SKAFFOLD_VERSION" ]]; then
-    curl -fsSL -o skaffold "https://github.com/GoogleContainerTools/skaffold/releases/download/$SKAFFOLD_VERSION/skaffold-linux-amd64"
-    chmod +x skaffold
-    sudo mv skaffold /usr/local/bin
-  fi
-  popd
-}
-
 function install_kubebuilder() {
   install_go
 

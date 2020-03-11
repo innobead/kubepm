@@ -10,15 +10,16 @@ source "${LIB_DIR}"/_common.sh
 function add_repos() {
   sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss || true
   sudo zypper ar "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy || true
-  sudo zypper --gpg-auto-import-keys ref
+  sudo zypper --gpg-auto-import-keys ref opensuse_factory_oss snappy
 }
 
 function remove_repos() {
-  sudo zypper mr -d opensuse_factory_oss
-  sudo zypper mr -d snappy
+  sudo zypper rr opensuse_factory_oss snappy 2>/dev/null || true
 }
 
 function setup() {
+  remove_repos
+
   if [[ $KU_SKIP_SETUP != "true" ]]; then
     # Install the general packages from the same distribution instead of factory
     pkgs=(sudo git curl tar gzip zip unzip which jq)

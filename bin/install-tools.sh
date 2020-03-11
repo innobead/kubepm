@@ -17,6 +17,9 @@ builtin_installers=(
   cert_tools
   ldap_tools
   cloud_tools
+  circleci
+  skaffold
+  jx
 )
 declare -a installers
 

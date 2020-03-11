@@ -22,6 +22,7 @@ builtin_installers=(
   protobuf
   jwt
   hub
+  bcrypt
 )
 declare -a installers
 
