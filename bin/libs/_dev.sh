@@ -94,6 +94,8 @@ EOF
 
   # install goexec
   go get -u github.com/shurcooL/goexec
+
+  # https://github.com/golangci/golangci-lint/releases
 }
 
 function install_python() {
@@ -201,6 +203,7 @@ function install_hub() {
 
   install_go
 
+  # shellcheck disable=SC2076
   if ! check_cmd hub || [[ ! "$(hub version)" =~ "${HUB_VERSION}" ]]; then
     pushd "${KU_TMP_DIR}"
 
@@ -219,7 +222,10 @@ function install_bcrypt() {
   go get -u github.com/bitnami/bcrypt-cli
 }
 
-function install_devenv() {
-  #TODO fzf, tmux, asciinema, ...
-  :
+function install_golangci_lint() {
+  repo_path=golangci/golangci-lint \
+    download_url="https://github.com/golangci/golangci-lint/releases/download/v{VERSION}/golangci-lint-{VERSION}-linux-amd64.tar.gz" \
+    exec_name=golangci-lint \
+    exec_version_cmd="--version" \
+    install_github_pkg
 }

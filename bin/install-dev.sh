@@ -23,6 +23,7 @@ builtin_installers=(
   jwt
   hub
   bcrypt
+  golangci_lint
 )
 declare -a installers
 

@@ -122,3 +122,70 @@ function install_pkgs() {
     $"install_$i"
   done
 }
+
+function install_github_pkg() {
+  repo_path=${repo_path:-}
+  download_url=${download_url:-}
+  exec_name=${exec_name:-}
+  exec_version_cmd=${exec_version_cmd:-version}
+  is_github_pkg=${is_github_pkg:-true}
+
+  if [[ -z "$download_url" ]]; then
+    error "No download_url specified"
+  fi
+
+  if [[ $is_github_pkg == "true" ]]; then
+    if [[ -z $repo_path ]] || [[ -z $exec_name ]]; then
+      error "No repo_path, exec_name specified"
+    fi
+
+    # get version and remove 'v' if the version has 'v' as a starting character
+    version=$(git_release_version "$repo_path")
+    if [[ "${version:0:1}" == "v" ]]; then
+      version="${version:1}"
+    fi
+
+    # check if already have the latest version
+    if check_cmd "$exec_name" && [[ "$($exec_name "$exec_version_cmd")" =~ $version ]]; then
+      return 0
+    fi
+
+    download_url="${download_url//\{VERSION\}/$version}"
+  fi
+
+  # validate artifact file type
+  case $download_url in
+  *.tar.gz | *.zip) ;;
+  *) error "Only tar.gz, zip supported" ;;
+  esac
+
+  pushd "$KU_TMP_DIR"
+
+  # download the artifact and extract to the destination folder
+  filename=$(basename "$download_url")
+  extract_dir=filename
+  curl -sSfLO "$download_url"
+
+  case $download_url in
+  *.tar.gz)
+    extract_dir=${filename%%.tar.gz}
+    cmd="tar -C $extract_dir -xzf $filename"
+    ;;
+  *.zip)
+    extract_dir=${filename%%.tar.gz}
+    cmd="unzip $filename -d $extract_dir"
+    ;;
+  esac
+
+  # delete the previsous cache w/o errors
+  rm -rf "$extract_dir" || true
+  mkdir "$extract_dir"
+  $cmd
+
+  f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
+  sudo install "$f" "$KU_INSTALL_BIN"
+
+  rm -rf "$extract_dir" "$filename"
+
+  popd
+}
