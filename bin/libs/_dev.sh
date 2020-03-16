@@ -9,7 +9,7 @@ source "${LIB_DIR}"/_init.sh
 
 # Constants
 GOFISH_VERSION=${GOFISH_VERSION:-}
-GO_VERSION=${GO_VERSION:-}
+GO_VERSION=${GO_VERSION:-go1.14}
 PYTHON_VERSION=${PYTHON_VERSION:-3.7.1}
 RUBY_VERSION=${RUBY_VERSION:-2.6.4}
 BAZEL_VERSION=${BAZEL_VERSION:-}
@@ -27,9 +27,9 @@ function install_sdkman() {
 
 function install_snap() {
   if ! check_cmd snap; then
-    sudo zypper in $KU_ZYPPER_INSTALL_OPTS snapd
+    sudo zypper in "$KU_ZYPPER_INSTALL_OPTS" snapd
   else
-    sudo zypper up $KU_ZYPPER_INSTALL_OPTS snapd
+    sudo zypper up "$KU_ZYPPER_INSTALL_OPTS" snapd
   fi
 
   if ! in_container; then
@@ -68,7 +68,10 @@ function install_gradle() {
 }
 
 function install_go() {
-  GO_VERSION=$(git_release_version golang/go)
+  if [[ -z "$GO_VERSION" ]]; then
+    # ISSUE: can't get the latest version from github, only golang/go has this problem
+    GO_VERSION=$(git_release_version golang/go)
+  fi
 
   # shellcheck disable=SC2076
   if ! check_cmd go || [[ ! "$(go version)" =~ "$GO_VERSION" ]]; then
@@ -83,19 +86,26 @@ export PATH=\$PATH:/usr/local/go/bin:\$GOBIN
 EOF
   fi
 
-  if ! check_cmd gore; then
-    go get -u github.com/motemen/gore/cmd/gore
-  fi
+  install_go_dev_tools
+}
 
+function install_go_dev_tools() {
   # install golang tools
   go get -u \
     golang.org/x/tools/... \
     golang.org/x/lint/golint
 
-  # install goexec
-  go get -u github.com/shurcooL/goexec
+  # install golangci-lint
+  repo_path=golangci/golangci-lint \
+    download_url="https://github.com/golangci/golangci-lint/releases/download/v{VERSION}/golangci-lint-{VERSION}-linux-amd64.tar.gz" \
+    exec_name=golangci-lint \
+    exec_version_cmd="--version" \
+    install_github_pkg
 
-  # https://github.com/golangci/golangci-lint/releases
+  # install Go REPL
+  if ! check_cmd gore; then
+    go get -u github.com/motemen/gore/cmd/gore
+  fi
 }
 
 function install_python() {
@@ -140,22 +150,15 @@ EOT
 }
 
 function install_bazel() {
-  if [[ -z $BAZEL_VERSION ]]; then
-    BAZEL_VERSION=$(git_release_version bazelbuild/bazel)
-  fi
+  sudo mkdir -p /usr/local/lib/bazel || true
+  sudo chown "$KU_USER" /usr/local/lib/bazel
 
-  if ! check_cmd bazel || [[ "$(bazel --version | awk '{print $2}')" != "$BAZEL_VERSION" ]]; then
-    pushd "${KU_TMP_DIR}"
-
-    installer=bazel-"$BAZEL_VERSION"-installer-linux-x86_64.sh
-    curl -sSfL -O https://github.com/bazelbuild/bazel/releases/download/"$BAZEL_VERSION"/"$installer"
-    chmod +x "$installer"
-
-    sudo mkdir -p /usr/local/lib/bazel && sudo chown $KU_USER /usr/local/lib/bazel
-    ./"$installer" && rm -f "$installer"
-
-    popd
-  fi
+  repo_path=bazelbuild/bazel \
+    version="$PROTOC_VERSION" \
+    download_url="{VERSION}/bazel-{VERSION}-installer-linux-x86_64.sh" \
+    exec_name=protoc \
+    exec_version_cmd="--version" \
+    install_github_pkg
 }
 
 function install_rust() {
@@ -165,31 +168,23 @@ function install_rust() {
     rustup self update
     rustup update
 
+    # shellcheck disable=SC1090
     source "$HOME"/.cargo/env
     rustc --version
   fi
 }
 
 function install_protobuf() {
-  if [[ -z $PROTOC_VERSION ]]; then
-    PROTOC_VERSION=$(git_release_version protocolbuffers/protobuf)
-  fi
-
   install_go
 
-  # shellcheck disable=SC2076
-  if ! check_cmd protoc || [[ ! "$(protoc --version)" =~ "${PROTOC_VERSION:1}" ]]; then
-    pushd "${KU_TMP_DIR}"
+  repo_path=protocolbuffers/protobuf \
+    version="$PROTOC_VERSION" \
+    download_url="v{VERSION}/protoc-{VERSION}-linux-x86_64.zip" \
+    exec_name=protoc \
+    exec_version_cmd="--version" \
+    install_github_pkg
 
-    installer=protoc-"${PROTOC_VERSION:1}"-linux-x86_64.zip
-    curl -sSfL -O https://github.com/protocolbuffers/protobuf/releases/download/"$PROTOC_VERSION"/"$installer"
-    unzip -d protoc "$installer"
-    sudo install protoc/bin/protoc "$KU_INSTALL_BIN" && rm -rf protoc*
-
-    go get -u github.com/golang/protobuf/protoc-gen-go
-
-    popd
-  fi
+  go get -u github.com/golang/protobuf/protoc-gen-go
 }
 
 function install_jwt() {
@@ -197,35 +192,17 @@ function install_jwt() {
 }
 
 function install_hub() {
-  if [[ -z $HUB_VERSION ]]; then
-    HUB_VERSION=$(git_release_version github/hub)
-  fi
-
-  install_go
-
-  # shellcheck disable=SC2076
-  if ! check_cmd hub || [[ ! "$(hub version)" =~ "${HUB_VERSION}" ]]; then
-    pushd "${KU_TMP_DIR}"
-
-    curl -sSfLO "https://github.com/github/hub/releases/download/${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION:1}.tgz"
-    mkdir hub &&
-      tar zxvf hub*.tgz --strip-components=1 -C hub &&
-      ./hub/install &&
-      rm -rf hub*
-
-    popd
-  fi
+  # shellcheck disable=SC2153
+  repo_path=github/hub \
+    version="$HUB_VERSION" \
+    download_url="v{VERSION}/hub-linux-amd64-{VERSION}.tgz" \
+    exec_name=hub \
+    exec_version_cmd="version" \
+    install_cmd="install" \
+    install_github_pkg
 }
 
 function install_bcrypt() {
   install_go
   go get -u github.com/bitnami/bcrypt-cli
-}
-
-function install_golangci_lint() {
-  repo_path=golangci/golangci-lint \
-    download_url="https://github.com/golangci/golangci-lint/releases/download/v{VERSION}/golangci-lint-{VERSION}-linux-amd64.tar.gz" \
-    exec_name=golangci-lint \
-    exec_version_cmd="--version" \
-    install_github_pkg
 }

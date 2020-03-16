@@ -15,6 +15,7 @@ builtin_installers=(
   snap
   gofish
   go
+  go_dev_tools
   gradle
   python
   ruby
@@ -23,7 +24,6 @@ builtin_installers=(
   jwt
   hub
   bcrypt
-  golangci_lint
 )
 declare -a installers
 

@@ -35,7 +35,7 @@ function git_release_version() {
   # ex: https://github.com/vmware-tanzu/velero/releases/latest
   value=$(curl -sSfL -H "Accept: application/json" "https://github.com/$1/releases/latest" | jq -r ".tag_name")
   if [[ $value == "null" ]]; then
-    echo ""
+    error "Failed to get the latest version from github"
   else
     echo "$value"
   fi
@@ -125,37 +125,42 @@ function install_pkgs() {
 
 function install_github_pkg() {
   repo_path=${repo_path:-}
+  version=${version:-}
   download_url=${download_url:-}
   exec_name=${exec_name:-}
   exec_version_cmd=${exec_version_cmd:-version}
+  install_cmd=${install_cmd:-}
   is_github_pkg=${is_github_pkg:-true}
 
   if [[ -z "$download_url" ]]; then
     error "No download_url specified"
   fi
+  download_url="https://github.com/$repo_path/releases/download/$download_url"
 
   if [[ $is_github_pkg == "true" ]]; then
     if [[ -z $repo_path ]] || [[ -z $exec_name ]]; then
       error "No repo_path, exec_name specified"
     fi
 
-    # get version and remove 'v' if the version has 'v' as a starting character
-    version=$(git_release_version "$repo_path")
-    if [[ "${version:0:1}" == "v" ]]; then
-      version="${version:1}"
+    if [[ -z "$version" ]]; then
+      # get version and remove 'v' if the version has 'v' as a starting character
+      version=$(git_release_version "$repo_path")
+      if [[ "${version:0:1}" == "v" ]]; then
+        version="${version:1}"
+      fi
     fi
 
     # check if already have the latest version
     if check_cmd "$exec_name" && [[ "$($exec_name "$exec_version_cmd")" =~ $version ]]; then
       return 0
     fi
-
-    download_url="${download_url//\{VERSION\}/$version}"
   fi
+
+  download_url="${download_url//\{VERSION\}/$version}"
 
   # validate artifact file type
   case $download_url in
-  *.tar.gz | *.zip) ;;
+  *.tar.gz | *.tgz | *.zip | *.sh) ;;
   *) error "Only tar.gz, zip supported" ;;
   esac
 
@@ -164,6 +169,7 @@ function install_github_pkg() {
   # download the artifact and extract to the destination folder
   filename=$(basename "$download_url")
   extract_dir=filename
+  rm -rf "$filename"
   curl -sSfLO "$download_url"
 
   case $download_url in
@@ -171,8 +177,12 @@ function install_github_pkg() {
     extract_dir=${filename%%.tar.gz}
     cmd="tar -C $extract_dir -xzf $filename"
     ;;
+  *.tgz)
+    extract_dir=${filename%%.tgz}
+    cmd="tar -C $extract_dir -xzf $filename"
+    ;;
   *.zip)
-    extract_dir=${filename%%.tar.gz}
+    extract_dir=${filename%%.zip}
     cmd="unzip $filename -d $extract_dir"
     ;;
   esac
@@ -182,8 +192,16 @@ function install_github_pkg() {
   mkdir "$extract_dir"
   $cmd
 
-  f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
-  sudo install "$f" "$KU_INSTALL_BIN"
+  if [[ $filename == *.sh ]]; then
+    chmod +x "$filename"
+    sudo ./"$filename"
+  elif [[ -z "$install_cmd" ]]; then
+    f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
+    sudo install "$f" "$KU_INSTALL_BIN"
+  else
+    f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
+    sudo ./"$f"
+  fi
 
   rm -rf "$extract_dir" "$filename"
 
