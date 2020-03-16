@@ -119,9 +119,9 @@ EOF
 
 function install_podman() {
   if ! check_cmd podman; then
-    sudo zypper in $KU_ZYPPER_INSTALL_OPTS podman
+    sudo zypper in "$KU_ZYPPER_INSTALL_OPTS" podman
   else
-    sudo zypper up $KU_ZYPPER_INSTALL_OPTS podman
+    sudo zypper up "$KU_ZYPPER_INSTALL_OPTS" podman
   fi
 
   if ! in_container; then

@@ -34,8 +34,6 @@ function install_terraform() {
 }
 
 function install_oci_tools() {
-  echo hello
-
   pkgs=(
     podman
     buildah
@@ -59,7 +57,7 @@ function install_oci_tools() {
   if ! check_cmd reg || [[ ! "$(reg version)" =~ "$REG_VERSION" ]]; then
     pushd "${KU_TMP_DIR}"
     curl -sSfL -o reg "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-linux-amd64"
-    sudo install reg $KU_INSTALL_BIN
+    sudo install reg "$KU_INSTALL_BIN"
     popd
   fi
 }
@@ -136,15 +134,10 @@ function install_skaffold() {
   fi
 
   pushd "${KU_TMP_DIR}"
-  if ! check_cmd skaffold || [[ ! "$(skaffold version)" =~ "$SKAFFOLD_VERSION" ]]; then
+  if ! check_cmd skaffold || [[ ! "$(skaffold version)" =~ $SKAFFOLD_VERSION ]]; then
     curl -fsSL -o skaffold "https://github.com/GoogleContainerTools/skaffold/releases/download/$SKAFFOLD_VERSION/skaffold-linux-amd64"
     chmod +x skaffold
     sudo mv skaffold /usr/local/bin
   fi
   popd
-}
-
-function install_jx() {
-    # TODO
-    :
 }
