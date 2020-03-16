@@ -22,16 +22,12 @@ CTRLTOOLS_VERSION=${CTRLTOOLS_VERSION:-}
 KUSTOMIZE_VERSION=${KUSTOMIZE_VERSION:-}
 
 function install_kind() {
-  if [[ -z $KIND_VERSION ]]; then
-    KIND_VERSION=$(git_release_version kubernetes-sigs/kind)
-  fi
-
-  if ! check_cmd kind || [[ ! "$(kind version)" != "$KIND_VERSION" ]]; then
-    pushd "${KU_TMP_DIR}"
-    curl -sSfL -o kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64" &&
-      sudo install kind "$KU_INSTALL_BIN"
-    popd
-  fi
+  repo_path=kubernetes-sigs/kind \
+    version="$KIND_VERSION" \
+    download_url="v{VERSION}/kind-linux-amd64" \
+    exec_name=kind \
+    exec_version_cmd="version" \
+    install_github_pkg
 }
 
 function install_minikube() {
@@ -40,15 +36,12 @@ function install_minikube() {
     exit 1
   fi
 
-  if [[ -z $MINIKUBE_VERSION ]]; then
-    MINIKUBE_VERSION=$(git_release_version kubernetes/minikube)
-  fi
-
-  # shellcheck disable=SC2076
-  if ! check_cmd minikube || [[ ! "$(minikube version)" =~ "$MINIKUBE_VERSION" ]]; then
-    curl -sSfL -o minikube "https://github.com/kubernetes/minikube/releases/download/$MINIKUBE_VERSION/minikube-linux-amd64" &&
-      sudo install minikube "$KU_INSTALL_BIN"
-  fi
+  repo_path=kubernetes/minikube \
+    version="$MINIKUBE_VERSION" \
+    download_url="v{VERSION}/minikube-linux-amd64" \
+    exec_name=minikube \
+    exec_version_cmd="version" \
+    install_github_pkg
 
   cat <<EOF
 If using kvm2 as vm-driver, please make sure default network is NAT to avoid unability to access internet to download necessary container images.
@@ -117,32 +110,22 @@ function install_kubectl() {
 }
 
 function install_velero() {
-  if [[ -z $VELERO_VERSION ]]; then
-    VELERO_VERSION=$(git_release_version vmware-tanzu/velero)
-  fi
-
-  if ! command -v velero || [[ "$(velero version --client-only)" != "$VELERO_VERSION" ]]; then
-    f="velero-$VELERO_VERSION-linux-amd64.tar.gz"
-    curl -sSfL -O "https://github.com/vmware-tanzu/velero/releases/download/$VELERO_VERSION/$f"
-
-    mkdir velero &&
-      tar zxvf "$f" --strip-components=1 -C velero &&
-      rm "$f"
-
-    chmod +x velero/velero && sudo mv velero/velero /usr/local/bin/
-  fi
+  repo_path=vmware-tanzu/velero \
+    version="$VELERO_VERSION" \
+    download_url="v{VERSION}/velero-v{VERSION}-linux-amd64.tar.gz" \
+    exec_name=velero \
+    exec_version_cmd="version --client-only" \
+    install_github_pkg
 }
 
 # footloose creates containers that look like virtual machines. Ref: https://github.com/weaveworks/footloose
 function install_footloose() {
-  if [[ -z $FOOTLOOSE_VERSION ]]; then
-    FOOTLOOSE_VERSION=$(git_release_version weaveworks/footloose)
-  fi
-
-  if ! command -v footloose || [[ ! "$(footloose version | awk '{print $2}')" =~ $FOOTLOOSE_VERSION ]]; then
-    curl -sSfL -o footloose "https://github.com/weaveworks/footloose/releases/download/$FOOTLOOSE_VERSION/footloose-$FOOTLOOSE_VERSION-linux-x86_64"
-    chmod +x footloose && sudo mv footloose /usr/local/bin
-  fi
+  repo_path=weaveworks/footloose \
+    version="$FOOTLOOSE_VERSION" \
+    download_url="v{VERSION}/footloose-{VERSION}-linux-x86_64" \
+    exec_name=footloose \
+    exec_version_cmd="version" \
+    install_github_pkg
 }
 
 # krew is a tool that makes it easy to use kubectl plugins. Ref: https://github.com/kubernetes-sigs/krew
@@ -154,7 +137,7 @@ function install_krew() {
   fi
 
   pushd "${KU_TMP_DIR}"
-  if ! check_cmd krew || [[ ! "$(krew version)" =~ "$KUBE_VERSION" ]]; then
+  if ! check_cmd krew || [[ ! "$(krew version)" =~ $KUBE_VERSION ]]; then
     curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/$KREW_VERSION/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
       KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" && mv "$KREW" "$KU_INSTALL_BIN"/krew
@@ -168,7 +151,7 @@ function install_krew() {
 
   rcs=("$HOME/.bashrc" "$HOME/.zshrc")
   for i in "${rcs[@]}"; do
-    if [[ -f "$i" ]] && [[ ! "$(cat "$i")" =~ "$plugins_path" ]]; then
+    if [[ -f "$i" ]] && [[ ! "$(cat "$i")" =~ $plugins_path ]]; then
       cat <<EOF >>"$i"
 export PATH=\$PATH:$plugins_path
 EOF
@@ -179,36 +162,15 @@ EOF
 }
 
 function install_kubebuilder() {
-  install_go
-
-  if [[ -z $KUBEBUILDER_VERSION ]]; then
-    KUBEBUILDER_VERSION=$(git_release_version kubernetes-sigs/kubebuilder)
-  fi
-
-  if ! check_cmd kubebuilder || [[ ! "$(kubebuilder version)" =~ "${KUBEBUILDER_VERSION:1}" ]]; then
-    os=$(go env GOOS)
-    arch=$(go env GOARCH)
-
-    pushd "${KU_TMP_DIR}"
-    mkdir kubebuilder || true
-    curl -fsSL "https://github.com/kubernetes-sigs/kubebuilder/releases/download/${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION:1}_${os}_${arch}.tar.gz" |
-      tar zxv --strip-components=1 -C kubebuilder
-
-    # kubebuilder also exists with other executables
-    #  ➜  ~ ll ~/Downloads/kubebuilder_2.2.0_linux_amd64/bin/ | awk '{if(NF>2){print $9}}'
-    #etcd
-    #kube-apiserver
-    #kubebuilder
-    #kubectl
-    install kubebuilder/bin/kubebuilder "$KU_INSTALL_BIN" && rm -rf kubebuilder
-
-    popd
-  fi
+  repo_path=kubernetes-sigs/kubebuilder \
+    version="$KUBEBUILDER_VERSION" \
+    download_url="v{VERSION}/kubebuilder_{VERSION}_linux_amd64.tar.gz" \
+    exec_name=kubebuilder \
+    exec_version_cmd="version" \
+    install_github_pkg
 }
 
 function install_controllertools() {
-  install_go
-
   if [[ -z $CTRLTOOLS_VERSION ]]; then
     CTRLTOOLS_VERSION=$(git_release_version kubernetes-sigs/controller-tools)
   fi
@@ -217,8 +179,6 @@ function install_controllertools() {
 }
 
 function install_kustomize() {
-  install_go
-
   if [[ -z $KUSTOMIZE_VERSION ]]; then
     KUSTOMIZE_VERSION=$(
       curl -s https://api.github.com/repos/kubernetes-sigs/kustomize/releases |
@@ -233,12 +193,10 @@ function install_kustomize() {
     )
   fi
 
-  pushd "${KU_TMP_DIR}"
-
-  if ! check_cmd kustomize || [[ ! "$(kustomize version --short)" =~ "${KUSTOMIZE_VERSION:1}" ]]; then
-    curl -sSfL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" | tar zxv
-    install kustomize "$KU_INSTALL_BIN" && rm -rf kustomize
-  fi
-
-  popd
+  repo_path=kubernetes-sigs/kustomize \
+    version="$KUSTOMIZE_VERSION" \
+    download_url="kustomize/{VERSION}/kustomize_{VERSION}_linux_amd64.tar.gz" \
+    exec_name=kustomize \
+    exec_version_cmd="version --short" \
+    install_github_pkg
 }

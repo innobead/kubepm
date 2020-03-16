@@ -175,8 +175,6 @@ function install_rust() {
 }
 
 function install_protobuf() {
-  install_go
-
   repo_path=protocolbuffers/protobuf \
     version="$PROTOC_VERSION" \
     download_url="v{VERSION}/protoc-{VERSION}-linux-x86_64.zip" \
@@ -203,6 +201,5 @@ function install_hub() {
 }
 
 function install_bcrypt() {
-  install_go
   go get -u github.com/bitnami/bcrypt-cli
 }

@@ -160,7 +160,7 @@ function install_github_pkg() {
 
   # validate artifact file type
   case $download_url in
-  *.tar.gz | *.tgz | *.zip | *.sh) ;;
+  *.tar.gz | *.tgz | *.zip | *.sh | *-linux-amd64) ;;
   *) error "Only tar.gz, zip supported" ;;
   esac
 
@@ -168,7 +168,6 @@ function install_github_pkg() {
 
   # download the artifact and extract to the destination folder
   filename=$(basename "$download_url")
-  extract_dir=filename
   rm -rf "$filename"
   curl -sSfLO "$download_url"
 
@@ -187,20 +186,33 @@ function install_github_pkg() {
     ;;
   esac
 
-  # delete the previsous cache w/o errors
-  rm -rf "$extract_dir" || true
-  mkdir "$extract_dir"
-  $cmd
+  if [[ -n "$extract_dir" ]]; then
+    # delete the previsous cache w/o errors
+    rm -rf "$extract_dir" || true
+    mkdir "$extract_dir"
+    $cmd
+  fi
 
   if [[ $filename == *.sh ]]; then
     chmod +x "$filename"
     sudo ./"$filename"
+
+  elif [[ $filename =~ .*-linux-amd64$ ]]; then
+    if [[ ! $filename =~ ^$exec_name.* ]]; then
+      error "The name of downloaded file ($filename) does not start with $exec_name"
+    fi
+
+    chmod +x "$filename" && mv "$filename" "$exec_name"
+    sudo install "$exec_name" "$KU_INSTALL_BIN"
+
   elif [[ -z "$install_cmd" ]]; then
     f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
     sudo install "$f" "$KU_INSTALL_BIN"
+
   else
     f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
     sudo ./"$f"
+
   fi
 
   rm -rf "$extract_dir" "$filename"
