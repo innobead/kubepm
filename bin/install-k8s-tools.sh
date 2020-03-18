@@ -16,11 +16,13 @@ builtin_installers=(
   helm
   kubectl
   velero
-  footloose
   krew
   kubebuilder
   controllertools
   kustomize
+  footloose
+  ignite
+  cni_plugins
 )
 declare -a installers
 

@@ -131,15 +131,15 @@ function install_github_pkg() {
   exec_version_cmd=${exec_version_cmd:-version}
   install_cmd=${install_cmd:-}
   is_github_pkg=${is_github_pkg:-true}
+  dest_dir=${dest_dir:-$KU_INSTALL_BIN}
 
-  if [[ -z "$download_url" ]]; then
-    error "No download_url specified"
-  fi
-  download_url="https://github.com/$repo_path/releases/download/$download_url"
+  declare -a exec_names
+  mapfile -t exec_names < <(echo "${exec_name//,/$'\n'}")
+  exec_name=${exec_names[0]}
 
   if [[ $is_github_pkg == "true" ]]; then
-    if [[ -z $repo_path ]] || [[ -z $exec_name ]]; then
-      error "No repo_path, exec_name specified"
+    if [[ -z $repo_path ]]; then
+      error "No repo_path specified"
     fi
 
     if [[ -z "$version" ]]; then
@@ -150,72 +150,97 @@ function install_github_pkg() {
       fi
     fi
 
-    # check if already have the latest version
-    if check_cmd "$exec_name" && [[ "$($exec_name "$exec_version_cmd")" =~ $version ]]; then
-      return 0
+    if [[ -n $exec_name ]]; then
+      # check if already have the latest version
+      # shellcheck disable=SC2086
+      if check_cmd "$exec_name" && [[ "$(eval "$exec_name $exec_version_cmd")" =~ $version ]]; then
+        return 0
+      fi
     fi
+  fi
+
+  if [[ -z "$download_url" ]]; then
+    error "No download_url specified"
   fi
 
   download_url="${download_url//\{VERSION\}/$version}"
-
-  # validate artifact file type
-  case $download_url in
-  *.tar.gz | *.tgz | *.zip | *.sh | *-linux-amd64) ;;
-  *) error "Only tar.gz, zip supported" ;;
-  esac
+  declare -a download_urls
+  mapfile -t download_urls < <(echo "${download_url//,/$'\n'}")
 
   pushd "$KU_TMP_DIR"
 
-  # download the artifact and extract to the destination folder
-  filename=$(basename "$download_url")
-  rm -rf "$filename"
-  curl -sSfLO "$download_url"
+  for index in "${!download_urls[@]}"; do
+    download_url=${download_urls[index]}
+    exec_name=${exec_names[index]}
 
-  case $download_url in
-  *.tar.gz)
-    extract_dir=${filename%%.tar.gz}
-    cmd="tar -C $extract_dir -xzf $filename"
-    ;;
-  *.tgz)
-    extract_dir=${filename%%.tgz}
-    cmd="tar -C $extract_dir -xzf $filename"
-    ;;
-  *.zip)
-    extract_dir=${filename%%.zip}
-    cmd="unzip $filename -d $extract_dir"
-    ;;
-  esac
+    download_url="https://github.com/$repo_path/releases/download/$download_url"
 
-  if [[ -n "$extract_dir" ]]; then
-    # delete the previsous cache w/o errors
-    rm -rf "$extract_dir" || true
-    mkdir "$extract_dir"
-    $cmd
-  fi
+    # validate artifact file type
+    case $download_url in
+    *.tar.gz | *.tgz | *.zip | *.sh | *-amd64 | *-linux-x86_64) ;;
+    *) error "Only tar.gz, zip supported" ;;
+    esac
 
-  if [[ $filename == *.sh ]]; then
-    chmod +x "$filename"
-    sudo ./"$filename"
+    # download the artifact and extract to the destination folder
+    filename=$(basename "$download_url")
+    rm -rf "$filename"
+    curl -sSfLO "$download_url"
 
-  elif [[ $filename =~ .*-linux-amd64$ ]]; then
-    if [[ ! $filename =~ ^$exec_name.* ]]; then
-      error "The name of downloaded file ($filename) does not start with $exec_name"
+    case $download_url in
+    *.tar.gz)
+      extract_dir=${filename%%.tar.gz}
+      cmd="tar -C $extract_dir -xzf $filename"
+      ;;
+    *.tgz)
+      extract_dir=${filename%%.tgz}
+      cmd="tar -C $extract_dir -xzf $filename"
+      ;;
+    *.zip)
+      extract_dir=${filename%%.zip}
+      cmd="unzip $filename -d $extract_dir"
+      ;;
+    esac
+
+    # extract files
+    if [[ -n "$extract_dir" ]]; then
+      # delete the previsous cache w/o errors
+      rm -rf "$extract_dir" || true
+      mkdir "$extract_dir"
+      $cmd
     fi
 
-    chmod +x "$filename" && mv "$filename" "$exec_name"
-    sudo install "$exec_name" "$KU_INSTALL_BIN"
+    (sudo mkdir -p "$dest_dir" && sudo chown -R "$KU_USER" "$dest_dir") || true
 
-  elif [[ -z "$install_cmd" ]]; then
-    f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
-    sudo install "$f" "$KU_INSTALL_BIN"
+    # install executables into destination folder
+    if [[ $filename == *.sh ]]; then
+      chmod +x "$filename"
+      sudo ./"$filename"
 
-  else
-    f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
-    sudo ./"$f"
+    elif [[ $filename =~ .*-amd64$ ]] || [[ $filename =~ .*-linux-x86_64$ ]]; then
+      if [[ ! $filename =~ ^$exec_name.* ]]; then
+        error "The name of downloaded file ($filename) does not start with $exec_name"
+      fi
 
-  fi
+      chmod +x "$filename" && mv "$filename" "$exec_name"
+      sudo install "$exec_name" "$dest_dir"
 
-  rm -rf "$extract_dir" "$filename"
+    elif [[ -z "$install_cmd" ]]; then
+      if [[ -n $exec_name ]]; then
+
+        f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
+        sudo install "$f" "$dest_dir"
+
+      else
+        sudo cp "$extract_dir"/* "$dest_dir"/
+      fi
+    else
+      f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
+      sudo ./"$f"
+
+    fi
+
+    rm -rf "$extract_dir" "$filename"
+  done
 
   popd
 }

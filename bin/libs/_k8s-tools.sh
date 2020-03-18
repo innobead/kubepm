@@ -118,16 +118,6 @@ function install_velero() {
     install_github_pkg
 }
 
-# footloose creates containers that look like virtual machines. Ref: https://github.com/weaveworks/footloose
-function install_footloose() {
-  repo_path=weaveworks/footloose \
-    version="$FOOTLOOSE_VERSION" \
-    download_url="v{VERSION}/footloose-{VERSION}-linux-x86_64" \
-    exec_name=footloose \
-    exec_version_cmd="version" \
-    install_github_pkg
-}
-
 # krew is a tool that makes it easy to use kubectl plugins. Ref: https://github.com/kubernetes-sigs/krew
 function install_krew() {
   install_kubectl
@@ -198,5 +188,32 @@ function install_kustomize() {
     download_url="kustomize/{VERSION}/kustomize_{VERSION}_linux_amd64.tar.gz" \
     exec_name=kustomize \
     exec_version_cmd="version --short" \
+    install_github_pkg
+}
+
+function install_ignite() {
+  repo_path=weaveworks/ignite \
+    version="$IGNITE_VERSION" \
+    download_url="v{VERSION}/ignite-amd64,v{VERSION}/ignited-amd64" \
+    exec_name="ignite,ignited" \
+    exec_version_cmd="version -o short" \
+    install_github_pkg
+}
+
+# footloose creates containers that look like virtual machines. Ref: https://github.com/weaveworks/footloose
+function install_footloose() {
+  repo_path=weaveworks/footloose \
+    version="$FOOTLOOSE_VERSION" \
+    download_url="{VERSION}/footloose-{VERSION}-linux-x86_64" \
+    exec_name=footloose \
+    exec_version_cmd="version | head -n 1 | awk -F : '{print \$2}' | tr -d ' '" \
+    install_github_pkg
+}
+
+function install_cni_plugins() {
+  repo_path=containernetworking/plugins\
+    version="$IGNITE_VERSION" \
+    download_url="v{VERSION}/cni-plugins-linux-amd64-v{VERSION}.tgz" \
+    dest_dir="/opt/cni/bin" \
     install_github_pkg
 }
