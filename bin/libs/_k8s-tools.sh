@@ -192,6 +192,20 @@ function install_kustomize() {
 }
 
 function install_ignite() {
+  # https://ignite.readthedocs.io/en/stable/installation.html
+
+  if ! lscpu | grep Virtualization || ! lsmod | grep kvm; then
+    error "No virtualization supported"
+  fi
+
+  if ! command -v containerd; then
+    error "No docker installed"
+  fi
+
+  zypper in "$KU_ZYPPER_INSTALL_OPTS" e2fsprogs openssh git
+
+  install_cni_plugins
+
   repo_path=weaveworks/ignite \
     version="$IGNITE_VERSION" \
     download_url="v{VERSION}/ignite-amd64,v{VERSION}/ignited-amd64" \
@@ -212,7 +226,6 @@ function install_footloose() {
 
 function install_cni_plugins() {
   repo_path=containernetworking/plugins\
-    version="$IGNITE_VERSION" \
     download_url="v{VERSION}/cni-plugins-linux-amd64-v{VERSION}.tgz" \
     dest_dir="/opt/cni/bin" \
     install_github_pkg
