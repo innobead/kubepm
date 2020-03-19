@@ -202,7 +202,8 @@ function install_ignite() {
     error "No docker installed"
   fi
 
-  zypper in "$KU_ZYPPER_INSTALL_OPTS" e2fsprogs openssh git
+  # shellcheck disable=SC2086
+  sudo zypper in $KU_ZYPPER_INSTALL_OPTS e2fsprogs openssh git
 
   install_cni_plugins
 

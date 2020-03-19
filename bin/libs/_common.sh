@@ -124,18 +124,18 @@ function install_pkgs() {
 }
 
 function install_github_pkg() {
-  repo_path=${repo_path:-}
-  version=${version:-}
-  download_url=${download_url:-}
-  exec_name=${exec_name:-}
-  exec_version_cmd=${exec_version_cmd:-version}
-  install_cmd=${install_cmd:-}
-  is_github_pkg=${is_github_pkg:-true}
-  dest_dir=${dest_dir:-$KU_INSTALL_BIN}
+  local repo_path=${repo_path:-}
+  local version=${version:-}
+  local download_url=${download_url:-}
+  local exec_name=${exec_name:-}
+  local exec_version_cmd=${exec_version_cmd:-version}
+  local install_cmd=${install_cmd:-}
+  local is_github_pkg=${is_github_pkg:-true}
+  local dest_dir=${dest_dir:-$KU_INSTALL_BIN}
 
   declare -a exec_names
   mapfile -t exec_names < <(echo "${exec_name//,/$'\n'}")
-  exec_name=${exec_names[0]}
+  local exec_name=${exec_names[0]}
 
   if [[ $is_github_pkg == "true" ]]; then
     if [[ -z $repo_path ]]; then
@@ -163,11 +163,13 @@ function install_github_pkg() {
     error "No download_url specified"
   fi
 
-  download_url="${download_url//\{VERSION\}/$version}"
+  local download_url="${download_url//\{VERSION\}/$version}"
   declare -a download_urls
   mapfile -t download_urls < <(echo "${download_url//,/$'\n'}")
 
   pushd "$KU_TMP_DIR"
+
+  echo ">>>  ${download_urls[*]}"
 
   for index in "${!download_urls[@]}"; do
     download_url=${download_urls[index]}
@@ -185,6 +187,8 @@ function install_github_pkg() {
     filename=$(basename "$download_url")
     rm -rf "$filename"
     curl -sSfLO "$download_url"
+
+    local extract_dir=""
 
     case $download_url in
     *.tar.gz)
