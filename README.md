@@ -4,61 +4,22 @@ This is a project about setting up K8s development, runtime and solution environ
 
 ## Prerequisites
 
-Right now, this repo only supports openSUSE LEAP and Tumbleweed.
+Right now, the tools in this repo only support openSUSE LEAP and Tumbleweed OS.
 
 ## Install tools
 ```
-➜  k8s-utils git:(master) ✗ ./bin/install-dev.sh      
+➜  k8s-utils git:(master) ./bin/install.sh                                                       
 Configurable Variables:
  KU_FORCE_INSTALL=false
  KU_INSTALL_BIN=/usr/local/bin
  KU_INSTALL_DIR=/usr/local/lib
- KU_SKIP_SETUP=false
+ KU_SKIP_SETUP=true
  KU_TMP_DIR=/tmp
  KU_USER=davidko
  KU_ZYPPER_INSTALL_OPTS='-y -l'
 
 Command Usage:
-  ./bin/install-dev.sh [ sdkman | bazel | snap | gofish | go | gradle | python | ruby | rust | protobuf | jwt | all ]
-
-➜  k8s-utils git:(master) ✗ ./bin/install-k8s-tools.sh          
-Configurable Variables:
- KU_FORCE_INSTALL=false
- KU_INSTALL_BIN=/usr/local/bin
- KU_INSTALL_DIR=/usr/local/lib
- KU_SKIP_SETUP=false
- KU_TMP_DIR=/tmp
- KU_USER=davidko
- KU_ZYPPER_INSTALL_OPTS='-y -l'
-
-Command Usage:
-  ./bin/install-k8s-tools.sh [ kind | minikube | helm | kubectl | velero | footloose | krew | skaffold | kubebuilder | controllertools | kustomize | all ]
-
-➜  k8s-utils git:(master) ✗ ./bin/install-runtime.sh  
-Configurable Variables:
- KU_FORCE_INSTALL=false
- KU_INSTALL_BIN=/usr/local/bin
- KU_INSTALL_DIR=/usr/local/lib
- KU_SKIP_SETUP=false
- KU_TMP_DIR=/tmp
- KU_USER=davidko
- KU_ZYPPER_INSTALL_OPTS='-y -l'
-
-Command Usage:
-  ./bin/install-runtime.sh [ docker | libvirt | virtualbox | vagrant | all ]
-
-➜  k8s-utils git:(master) ✗ ./bin/install-tools.sh           
-Configurable Variables:
- KU_FORCE_INSTALL=false
- KU_INSTALL_BIN=/usr/local/bin
- KU_INSTALL_DIR=/usr/local/lib
- KU_SKIP_SETUP=false
- KU_TMP_DIR=/tmp
- KU_USER=davidko
- KU_ZYPPER_INSTALL_OPTS='-y -l'
-
-Command Usage:
-  ./bin/install-tools.sh [ terraform | oci_tools | salt | cert_tools | ldap_tools | cloud_tools | all ]
+  ./bin/install.sh [ bazel | bcrypt | cert_tools | circleci | cloud_tools | cni_plugins | controllertools | direnv | docker | footloose | gimme | go | go_dev_tools | gofish | gradle | helm | hub | ignite | jwt | kind | krew | kubebuilder | kubectl | kustomize | ldap_tools | libvirt | lxc | minikube | oci_tools | podman | protobuf | python | rust | salt | sdkman | skaffold | snap | terraform | vagrant | velero | virtualbox | all ]
 
 ```
 
