@@ -203,3 +203,20 @@ function install_hub() {
 function install_bcrypt() {
   go get -u github.com/bitnami/bcrypt-cli
 }
+
+function install_direnv() {
+  repo_path=direnv/direnv \
+    download_url="v{VERSION}/direnv.linux-amd64" \
+    exec_name=direnv \
+    exec_version_cmd="version" \
+    install_github_pkg
+}
+
+function install_gimme() {
+  pushd "$KU_TMP_DIR"
+
+  curl -sSfLO https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+  chmod +x gimme && sudo mv gimme "$KU_INSTALL_BIN"
+
+  popd
+}

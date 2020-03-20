@@ -106,7 +106,7 @@ function collect_pkgs() {
     if [[ "${builtin_installers[@]}" =~ "$1" ]]; then
       installers+=("$1")
     else
-      echo "Invalid install option ($1)"
+      error "Invalid install option ($1)"
     fi
 
     shift
@@ -247,4 +247,16 @@ function install_github_pkg() {
   done
 
   popd
+}
+
+function get_install_functions() {
+  declare -a fns
+  mapfile -t fns < <(declare -F | awk '{print $3}')
+
+  for fn in "${fns[@]}"; do
+    if [[ $fn =~ ^install_* ]] && [[ $fn != "install_pkgs" ]] && [[ $fn != "install_github_pkg" ]]; then
+      fn=${fn#install_}
+      echo "$fn"
+    fi
+  done
 }
