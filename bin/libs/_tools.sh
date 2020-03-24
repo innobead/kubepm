@@ -108,16 +108,30 @@ function install_ldap_tools() {
 function install_cloud_tools() {
   pushd "${KU_TMP_DIR}"
 
-  "${BIN_DIR}"/install-dev.sh python
   pip install --upgrade awscli
 
+  if [[ -f ~/.aws/credentials ]]; then
+    cat <<EOF >~/.aws/credentials
+[default]
+aws_access_key_id =
+aws_secret_access_key =
+EOF
+  fi
+
   #TODO azure does not support non-interactive install yet
-  curl -L https://aka.ms/InstallAzureCli | bash
+  curl -L https://aka.ms/InstallAzureCli | sudo bash
 
   curl https://sdk.cloud.google.com >install.sh
   # shellcheck disable=SC2086
-  bash install.sh --disable-prompts --install-dir=$KU_INSTALL_DIR
+  sudo bash install.sh --disable-prompts --install-dir=$KU_INSTALL_DIR
   rm install.sh
+
+  if ! grep "GCLOUD_PATH" /home/"$KU_USER"/.bashrc; then
+    cat <<EOF >>/home/"$KU_USER"/.bashrc
+export GCLOUD_PATH=$KU_INSTALL_DIR/google-cloud-sdk
+export PATH=\$GCLOUD_PATH/bin:\$PATH
+EOF
+  fi
 
   popd
 }
