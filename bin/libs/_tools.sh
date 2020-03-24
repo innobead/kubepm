@@ -9,11 +9,16 @@ source "${LIB_DIR}"/_init.sh
 
 # Constants
 REG_VERSION=${REG_VERSION:-}
-TERRAFORM_VERSION=${TERRAFORM_VERSION:-0.11.14}
+TERRAFORM_VERSION=${TERRAFORM_VERSION:-}
 MKCERT_VERSION=${MKCERT_VERSION:-}
 CFSSL_VERSION=${CFSSL_VERSION:-}
 
 function install_terraform() {
+  if [[ -z $TERRAFORM_VERSION ]]; then
+    TERRAFORM_VERSION=$(git_release_version hashicorp/terraform)
+    TERRAFORM_VERSION=${TERRAFORM_VERSION/v/$''}
+  fi
+
   # shellcheck disable=SC2076
   if ! check_cmd terraform || [[ ! "$(terraform version)" =~ "$TERRAFORM_VERSION" ]]; then
     pushd "${KU_TMP_DIR}"
