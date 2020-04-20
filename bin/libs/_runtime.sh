@@ -40,7 +40,6 @@ function install_virtualbox() {
 # https://github.com/vagrant-libvirt/vagrant-libvirt#installation
 function install_vagrant() {
   pkgs=(
-    vagrant
     qemu
     libvirt
     libvirt-devel
@@ -50,7 +49,18 @@ function install_vagrant() {
   )
   zypper_pkg_install "${pkgs[@]}"
 
-  vagrant plugin install vagrant-libvirt
+  repo_path=hashicorp/vagrant \
+    version="2.2.7" \
+    download_url="https://releases.hashicorp.com/vagrant/{VERSION}/vagrant_{VERSION}_linux_amd64.zip" \
+    exec_name=vagrant \
+    exec_version_cmd="version" \
+    install_github_pkg
+
+  # v$(vagrant version | head -n 1 | awk '{print $3}')
+
+  curl -sSfLO https://releases.hashicorp.com/vagrant/2.2.7/vagrant_2.2.7_linux_amd64.zip
+
+  CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib" vagrant plugin install vagrant-libvirt
 }
 
 function install_lxc() {

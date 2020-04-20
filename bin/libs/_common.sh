@@ -33,7 +33,7 @@ function k8s_version() {
 
 function git_release_version() {
   # ex: https://github.com/vmware-tanzu/velero/releases/latest
-  value=$(curl -sSfL -H "Accept: application/json" "https://github.com/$1/releases/latest" | jq -r ".tag_name")
+  value=$(curl -sSfL "https://api.github.com/repos/$1/releases/latest" | jq -r ".tag_name")
   if [[ $value == "null" ]]; then
     error "Failed to get the latest version from github"
   else
