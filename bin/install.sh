@@ -7,7 +7,7 @@ source "${BIN_DIR}"/libs/_common.sh
 # shellcheck disable=SC1090
 source "${BIN_DIR}"/libs/_dev.sh
 # shellcheck disable=SC1090
-source "${BIN_DIR}"/libs/_k8s-tools.sh
+source "${BIN_DIR}"/libs/_k8s.sh
 # shellcheck disable=SC1090
 source "${BIN_DIR}"/libs/_runtime.sh
 # shellcheck disable=SC1090
