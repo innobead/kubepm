@@ -11,6 +11,8 @@ source "${BIN_DIR}"/libs/_k8s-tools.sh
 # shellcheck disable=SC1090
 source "${BIN_DIR}"/libs/_runtime.sh
 # shellcheck disable=SC1090
+source "${BIN_DIR}"/libs/_container.sh
+# shellcheck disable=SC1090
 source "${BIN_DIR}"/libs/_tools.sh
 # shellcheck disable=SC1090
 source "${BIN_DIR}"/libs/_suse.sh
