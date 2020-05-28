@@ -124,11 +124,11 @@ EOF
   fi
 
   #TODO azure does not support non-interactive install yet
-  curl -L https://aka.ms/InstallAzureCli | sudo bash
+  curl -L https://aka.ms/InstallAzureCli | bash
 
   curl https://sdk.cloud.google.com >install.sh
   # shellcheck disable=SC2086
-  sudo bash install.sh --disable-prompts --install-dir=$KU_INSTALL_DIR
+  bash install.sh --disable-prompts --install-dir=$KU_INSTALL_DIR
   rm install.sh
 
   if ! grep "GCLOUD_PATH" /home/"$KU_USER"/.bashrc; then
