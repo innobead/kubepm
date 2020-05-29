@@ -52,7 +52,7 @@ if [[ -z $SKUBA_VERSION ]]; then
   SKUBA_VERSION=$(git_release_version SUSE/skuba)
 fi
 
-pushd "${KU_TMP_DIR}"
+# shellcheck disable=SC2076
 if ! check_cmd skuba || [[ ! "$(skuba version)" =~ "$SKUBA_VERSION" ]]; then
   rm -rf skuba* &&
     curl -fsSL "https://github.com/SUSE/skuba/archive/$SKUBA_VERSION.tar.gz" -o skuba.tar.gz &&
@@ -77,7 +77,6 @@ if ! check_cmd skuba || [[ ! "$(skuba version)" =~ "$SKUBA_VERSION" ]]; then
   popd
   rm -rf skuba*
 fi
-popd
 
 cd "$WORKDING_DIR/$INFRA"
 mkdir -p "$(dirname "$IMAGE_URI")" || true

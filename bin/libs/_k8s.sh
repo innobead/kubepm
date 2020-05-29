@@ -79,11 +79,10 @@ function install_helm() {
     return
   fi
 
-  pushd "${KU_TMP_DIR}"
-
   download=helm-$HELM_VERSION-linux-amd64.tar.gz
   curl -sSfLO "https://get.helm.sh/$download" &&
-    tar -zxvf "$download" --strip-components 1 && rm "$download"
+    tar -zxvf "$download" --strip-components 1 &&
+    rm "$download"
 
   chmod +x helm
 
@@ -94,18 +93,14 @@ function install_helm() {
   fi
 
   helm repo add stable https://kubernetes-charts.storage.googleapis.com
-
-  popd
 }
 
 function install_kubectl() {
   # shellcheck disable=SC2076
   if ! check_cmd kubectl || [[ ! "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
-    pushd "${KU_TMP_DIR}"
     # shellcheck disable=SC2086
     curl -sSfLO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
       sudo install kubectl "$KU_INSTALL_BIN"
-    popd
   fi
 }
 
@@ -126,7 +121,6 @@ function install_krew() {
     KREW_VERSION=$(git_release_version kubernetes-sigs/krew)
   fi
 
-  pushd "${KU_TMP_DIR}"
   if ! check_cmd krew || [[ ! "$(krew version)" =~ $KUBE_VERSION ]]; then
     curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/$KREW_VERSION/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
@@ -147,8 +141,6 @@ export PATH=\$PATH:$plugins_path
 EOF
     fi
   done
-
-  popd
 }
 
 function install_kubebuilder() {

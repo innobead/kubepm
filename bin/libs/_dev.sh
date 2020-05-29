@@ -16,9 +16,7 @@ BAZEL_VERSION=${BAZEL_VERSION:-}
 
 function install_sdkman() {
   if ! check_cmd sdk; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfL "https://get.sdkman.io" | bash
-    popd
   fi
 
   # shellcheck disable=SC1090
@@ -44,10 +42,7 @@ function install_gofish() {
   fi
 
   if ! check_cmd gofish || [[ ! "$(gofish version)" != "GOFISH_VERSION" ]]; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfL https://raw.githubusercontent.com/fishworks/gofish/master/scripts/install.sh | bash
-    popd
-
     gofish init
     gofish update
   fi
@@ -75,11 +70,8 @@ function install_go() {
 
   # shellcheck disable=SC2076
   if ! check_cmd go || [[ ! "$(go version)" =~ "$GO_VERSION" ]]; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfLO "https://dl.google.com/go/$GO_VERSION.linux-amd64.tar.gz"
     tar -C /usr/local -xzf go*.tar.gz && rm go*.tar.gz
-    popd
-
     cat <<EOF >>"$HOME"/.bashrc
 export GOBIN=\$HOME/go/bin
 export PATH=\$PATH:/usr/local/go/bin:\$GOBIN
@@ -110,9 +102,7 @@ function install_go_dev_tools() {
 
 function install_python() {
   if ! check_cmd pyenv; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfL https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
-    popd
 
     cat <<EOT >>"$HOME"/.bashrc
 export PATH=\$HOME/.pyenv/bin:\$PATH
@@ -137,9 +127,7 @@ export PATH=\$HOME/.rbenv/bin:\$PATH
 eval "\$(rbenv init -)"
 EOT
 
-    pushd "${KU_TMP_DIR}"
     curl -sSfL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
-    popd
 
     # shellcheck disable=SC2086
     sudo zypper in $KU_ZYPPER_INSTALL_OPTS gcc-c++ libmariadb-devel

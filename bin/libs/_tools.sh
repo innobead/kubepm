@@ -12,6 +12,7 @@ REG_VERSION=${REG_VERSION:-}
 TERRAFORM_VERSION=${TERRAFORM_VERSION:-}
 MKCERT_VERSION=${MKCERT_VERSION:-}
 CFSSL_VERSION=${CFSSL_VERSION:-}
+MC_VERSION=${MC_VERSION:-}
 
 function install_terraform() {
   if [[ -z $TERRAFORM_VERSION ]]; then
@@ -21,20 +22,16 @@ function install_terraform() {
 
   # shellcheck disable=SC2076
   if ! check_cmd terraform || [[ ! "$(terraform version)" =~ "$TERRAFORM_VERSION" ]]; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfLO "https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
     unzip terraform*.zip && rm terraform*.zip
     chmod +x terraform && sudo mv terraform /usr/local/bin
-    popd
   fi
 
   if ! check_cmd ~/.terraform.d/plugins/terraform-provider-libvirt; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfLO "https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v0.5.2/terraform-provider-libvirt-0.5.2.openSUSE_Leap_15.1.x86_64.tar.gz"
     tar -zxvf terraform-provider-libvirt*.tar.gz && rm terraform-provider-libvirt*.tar.gz
     mkdir -p ~/.terraform.d/plugins
     mv terraform-provider-libvirt ~/.terraform.d/plugins
-    popd
   fi
 }
 
@@ -60,18 +57,14 @@ function install_oci_tools() {
 
   # shellcheck disable=SC2076
   if ! check_cmd reg || [[ ! "$(reg version)" =~ "$REG_VERSION" ]]; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfL -o reg "https://github.com/genuinetools/reg/releases/download/$REG_VERSION/reg-linux-amd64"
     sudo install reg "$KU_INSTALL_BIN"
-    popd
   fi
 }
 
 function install_salt() {
-  pushd "${KU_TMP_DIR}"
   curl -sSfL -o bootstrap-salt.sh "https://bootstrap.saltstack.com"
   sudo bootstrap-salt.sh
-  popd
 }
 
 function install_cert_tools() {
@@ -82,10 +75,8 @@ function install_cert_tools() {
   fi
 
   if ! check_cmd mkcert; then
-    pushd "${KU_TMP_DIR}"
     curl -sSfL -o mkcert "https://github.com/FiloSottile/mkcert/releases/download/$MKCERT_VERSION/mkcert-$MKCERT_VERSION-linux-amd64" &&
       sudo install mkcert "$KU_INSTALL_BIN"
-    popd
   fi
 
   if [[ -z $CFSSL_VERSION ]]; then
@@ -111,8 +102,6 @@ function install_ldap_tools() {
 }
 
 function install_cloud_tools() {
-  pushd "${KU_TMP_DIR}"
-
   pip install --upgrade awscli
 
   if [[ -f ~/.aws/credentials ]]; then
@@ -137,8 +126,6 @@ export GCLOUD_PATH=$KU_INSTALL_DIR/google-cloud-sdk
 export PATH=\$GCLOUD_PATH/bin:\$PATH
 EOF
   fi
-
-  popd
 }
 
 function install_circleci() {
@@ -152,11 +139,18 @@ function install_skaffold() {
     SKAFFOLD_VERSION=$(git_release_version GoogleContainerTools/skaffold)
   fi
 
-  pushd "${KU_TMP_DIR}"
   if ! check_cmd skaffold || [[ ! "$(skaffold version)" =~ $SKAFFOLD_VERSION ]]; then
     curl -fsSL -o skaffold "https://github.com/GoogleContainerTools/skaffold/releases/download/$SKAFFOLD_VERSION/skaffold-linux-amd64"
     chmod +x skaffold
-    sudo mv skaffold /usr/local/bin
+    sudo mv skaffold "$KU_INSTALL_BIN"
   fi
-  popd
+}
+
+function install_mc() {
+  # shellcheck disable=SC2076
+  if ! check_cmd mc || [[ ! "$(mc --version)" =~ "$MC_VERSION" ]]; then
+    curl -fsSLO "https://dl.min.io/client/mc/release/linux-amd64/mc"
+    chmod +x mc
+    sudo mv mc "$KU_INSTALL_BIN"
+  fi
 }

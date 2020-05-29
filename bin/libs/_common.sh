@@ -119,7 +119,7 @@ function install_pkgs() {
   set -o xtrace
 
   for i in "${@}"; do
-    $"install_$i"
+    run_sanbox "install_$i"
   done
 }
 
@@ -259,4 +259,10 @@ function get_install_functions() {
       echo "$fn"
     fi
   done
+}
+
+function run_sanbox() {
+  pushd "${KU_TMP_DIR}"
+  $1
+  popd
 }

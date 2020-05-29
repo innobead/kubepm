@@ -18,8 +18,6 @@ function install_suse_caasp_env() {
 }
 
 function install_suse_sles_images() {
-  pushd "${KU_TMP_DIR}"
   curl -sSfLO https://download.suse.de/install/SLE-15-SP1-JeOS-QU2/SLES15-SP1-JeOS.x86_64-15.1-OpenStack-Cloud-QU2.qcow2
   sudo mv SLES15-SP1-JeOS.x86_64-15.1-OpenStack-Cloud-QU2.qcow2 /opt/images
-  popd
 }
