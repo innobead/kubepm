@@ -6,6 +6,7 @@ A shell CLI to install useful packages, tools, and systems for Containers/Kubere
 
 - openSUSE LEAP 15.x
 - openSUSE Tumbleweed
+- Docker 19.03
 
 ## Installing tools
 ```
