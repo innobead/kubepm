@@ -8,13 +8,14 @@ LIB_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 source "${LIB_DIR}"/_common.sh
 
 function add_repos() {
-  sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss || true
-  sudo zypper ar "https://download.opensuse.org/repositories/system:/snappy/openSUSE_Tumbleweed" snappy || true
-  sudo zypper --gpg-auto-import-keys ref opensuse_factory_oss snappy
+  #  sudo zypper ar "http://download.opensuse.org/tumbleweed/repo/oss/" opensuse_factory_oss || true
+  #  sudo zypper --gpg-auto-import-keys ref opensuse_factory_oss
+  :
 }
 
 function remove_repos() {
-  sudo zypper rr opensuse_factory_oss snappy 2>/dev/null || true
+  :
+  #  sudo zypper rr opensuse_factory_oss snappy 2>/dev/null || true
 }
 
 function setup() {

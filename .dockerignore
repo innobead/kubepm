@@ -1,6 +1,5 @@
 .idea
 .git
-.*
 *.iml
 LICENSE
 README.md

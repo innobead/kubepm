@@ -29,6 +29,11 @@ help | "")
   help "${builtin_installers[@]}"
   exit 0
   ;;
+init) # this is an hidden command for initializing necessary artifacts in the container image
+  setup
+  cleanup
+  exit 0
+  ;;
 all)
   installers+=("${builtin_installers[@]}")
   ;;
