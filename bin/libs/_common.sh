@@ -90,9 +90,10 @@ $vars
 Command Usage:
  ./bin/install.sh init
 
+ ./bin/install.sh all
  ./bin/$f <package name>
 EOF
-  for i in "$@" "all"; do
+  for i in "$@"; do
     printf "  - %s\n" "$i"
   done
 }

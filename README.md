@@ -25,6 +25,7 @@ Configurable Variables:
 Command Usage:
   ./bin/install.sh init
 
+  ./bin/install.sh all
   ./bin/install.sh <package name>
    - bazel
    - bcrypt
@@ -72,7 +73,6 @@ Command Usage:
    - vagrant
    - velero
    - virtualbox
-   - all
 ```
 
 ## Installing tools (via Container with the same user namespace and system library mounted folders)
