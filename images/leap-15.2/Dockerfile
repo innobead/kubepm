@@ -11,7 +11,7 @@ ENV KU_TMP_DIR=/tmp
 
 COPY . /workspace
 
-RUN zypper in -yl sudo; \
+RUN zypper in -yl sudo curl; \
     ./bin/install.sh init; \
     zypper cc -a
 

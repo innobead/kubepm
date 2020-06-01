@@ -24,7 +24,8 @@ function install_virtualbox() {
     zypper_cmd=up
   fi
 
-  sudo zypper $zypper_cmd "$KU_ZYPPER_INSTALL_OPTS" virtualbox
+  # shellcheck disable=SC2086
+  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS virtualbox
 }
 
 # https://github.com/vagrant-libvirt/vagrant-libvirt#installation

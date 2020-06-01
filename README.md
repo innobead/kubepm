@@ -1,6 +1,8 @@
 # k8s-utils
 
-A shell CLI to install useful packages, tools, and systems for Containers/Kuberentes development purpose.
+A shell CLI to install useful packages, tools, and systems for Containers/Kuberentes development purpose. 
+
+Note: we are planning to run by OCI `container runtime` directly in near future to avoid `container runtime manager` dependency.
 
 ## Prerequisites
 

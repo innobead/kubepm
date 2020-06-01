@@ -12,7 +12,9 @@ function install_docker() {
   if check_cmd docker; then
     zypper_cmd=up
   fi
-  sudo zypper $zypper_cmd "$KU_ZYPPER_INSTALL_OPTS" docker
+
+  # shellcheck disable=SC2086
+  sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS docker
 
   sudo pip install --upgrade docker-compose
 }
@@ -82,10 +84,11 @@ EOF
 }
 
 function install_podman() {
+  # shellcheck disable=SC2086
   if ! check_cmd podman; then
-    sudo zypper in "$KU_ZYPPER_INSTALL_OPTS" podman
+    sudo zypper in $KU_ZYPPER_INSTALL_OPTS podman
   else
-    sudo zypper up "$KU_ZYPPER_INSTALL_OPTS" podman
+    sudo zypper up $KU_ZYPPER_INSTALL_OPTS podman
   fi
 
   if ! in_container; then

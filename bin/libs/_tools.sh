@@ -98,6 +98,7 @@ function install_ldap_tools() {
     zypper_cmd=up
   fi
 
+  # shellcheck disable=SC2086
   sudo zypper $zypper_cmd $KU_ZYPPER_INSTALL_OPTS openldap2-client
 }
 

@@ -15,4 +15,3 @@ build-%:
 publish-%: build-%
 	docker push tag innobead/$(CWD):$*-$(COMMIT)
 	docker push innobead/$(CWD):$*-latest
-
