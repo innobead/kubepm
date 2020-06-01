@@ -82,13 +82,19 @@ function help() {
       sort |
       awk '{printf " %s\n", $0}'
   )
+
   cat <<EOF
 Configurable Variables:
 $vars
 
 Command Usage:
-  ./bin/$f [$(printf " %s |" "${@}") all ]
+ ./bin/install.sh init
+
+ ./bin/$f <package name>
 EOF
+  for i in "$@" "all"; do
+    printf "  - %s\n" "$i"
+  done
 }
 
 function collect_pkgs() {

@@ -24,8 +24,55 @@ Configurable Variables:
 
 Command Usage:
   ./bin/install.sh init
-  ./bin/install.sh [ bazel | bcrypt | cert_tools | circleci | cloud_tools | cni_plugins | controllertools | direnv | docker | footloose | gimme | go | go_dev_tools | gofish | gradle | helm | hub | ignite | jwt | kind | krew | kubebuilder | kubectl | kustomize | ldap_tools | libvirt | lxc | minikube | oci_tools | podman | protobuf | python | rust | salt | sdkman | skaffold | snap | terraform | vagrant | velero | virtualbox | all ]
 
+  ./bin/install.sh <package name>
+   - bazel
+   - bcrypt
+   - cert_tools
+   - circleci
+   - cloud_tools
+   - cni_plugins
+   - containerd
+   - controllertools
+   - crio
+   - direnv
+   - docker
+   - footloose
+   - gimme
+   - go
+   - go_dev_tools
+   - gofish
+   - gradle
+   - helm
+   - hub
+   - ignite
+   - jwt
+   - kind
+   - krew
+   - kubebuilder
+   - kubectl
+   - kustomize
+   - ldap_tools
+   - libvirt
+   - lxc
+   - mc
+   - minikube
+   - oci_tools
+   - podman
+   - protobuf
+   - python
+   - rust
+   - salt
+   - sdkman
+   - skaffold
+   - snap
+   - suse_caasp_env
+   - suse_sles_images
+   - terraform
+   - vagrant
+   - velero
+   - virtualbox
+   - all
 ```
 
 ## Installing tools (via Container with the same user namespace and system library mounted folders)
