@@ -13,5 +13,5 @@ build-%:
 	docker tag innobead/$(CWD):$*-$(COMMIT) innobead/$(CWD):$*-latest
 
 publish-%: build-%
-	docker push tag innobead/$(CWD):$*-$(COMMIT)
+	docker push innobead/$(CWD):$*-$(COMMIT)
 	docker push innobead/$(CWD):$*-latest

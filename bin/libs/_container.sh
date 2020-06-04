@@ -102,5 +102,5 @@ function install_crio() {
 }
 
 function install_containerd() {
-    :
+  :
 }

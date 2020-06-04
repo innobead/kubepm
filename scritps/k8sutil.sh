@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Please change to the container compatible with the local host
-IMG="innobead/k8s-util:leap-15.1"
+IMG="innobead/k8s-utils:leap-15.1-latest"
 
 docker pull "$IMG"
 

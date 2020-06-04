@@ -21,11 +21,11 @@ function remove_repos() {
 function setup() {
   remove_repos
 
-  if [[ $KU_SKIP_SETUP != "true" ]]; then
-    # Install the general packages from the same distribution instead of factory
-    pkgs=(sudo git curl tar gzip zip unzip which jq)
-    zypper_pkg_install "${pkgs[@]}"
+  # Install the general packages from the same distribution instead of factory
+  pkgs=(sudo git curl tar gzip zip unzip which jq)
+  zypper_pkg_install "${pkgs[@]}"
 
+  if [[ $KU_SKIP_SETUP != "true" ]]; then
     add_repos
   fi
 }

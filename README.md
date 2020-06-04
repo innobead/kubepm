@@ -77,7 +77,7 @@ Command Usage:
 
 ## Installing tools (via Container with the same user namespace and system library mounted folders)
 ```
-➜  k8s-utils git:(master) ./k8sutil.sh
+➜  k8s-utils git:(master) ./scripts/k8sutil.sh
 ```
 
 ## Deploying applications/services
