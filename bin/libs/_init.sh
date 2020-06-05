@@ -18,12 +18,16 @@ function remove_repos() {
   #  sudo zypper rr opensuse_factory_oss snappy 2>/dev/null || true
 }
 
-function setup() {
-  remove_repos
+function init() {
+  setup
 
   # Install the general packages from the same distribution instead of factory
   pkgs=(sudo git curl tar gzip zip unzip which jq)
   zypper_pkg_install "${pkgs[@]}"
+}
+
+function setup() {
+  remove_repos
 
   if [[ $KU_SKIP_SETUP != "true" ]]; then
     add_repos

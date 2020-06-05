@@ -30,7 +30,7 @@ help | "")
   exit 0
   ;;
 init) # this is an hidden command for initializing necessary artifacts in the container image
-  setup
+  init
   cleanup
   exit 0
   ;;
