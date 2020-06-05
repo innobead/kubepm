@@ -1,6 +1,6 @@
-# k8s-utils
+# KubePM
 
-A shell CLI to install useful packages, tools, and systems for Containers/Kuberentes development purpose. 
+KubePM (Kubernetes Package Manager), a CLI to install useful packages, tools, and services for Kuberentes development purpose. 
 
 Note: we are planning to run by OCI `container runtime` directly in near future to avoid `container runtime manager` dependency.
 
@@ -12,7 +12,7 @@ Note: we are planning to run by OCI `container runtime` directly in near future 
 
 ## Installing tools
 ```
-➜  k8s-utils git:(master) ./bin/install.sh                                                       
+➜  kubepm git:(master) ./bin/install.sh                                                       
 Configurable Variables:
  KU_FORCE_INSTALL=false
  KU_INSTALL_BIN=/usr/local/bin
@@ -77,11 +77,11 @@ Command Usage:
 
 ## Installing tools (via Container with the same user namespace and system library mounted folders)
 ```
-➜  k8s-utils git:(master) ./scripts/k8sutil.sh
+➜  kubepm git:(master) ./scripts/kubepm.sh
 ```
 
 ## Deploying applications/services
 ```
-➜  k8s-utils git:(master) ✗ ./deploy/kind/install.sh 
-➜  k8s-utils git:(master) ✗ ./deploy/kind/uninstall.sh 
+➜  kubepm git:(master) ✗ ./deploy/kind/install.sh 
+➜  kubepm git:(master) ✗ ./deploy/kind/uninstall.sh 
 ```
