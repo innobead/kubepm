@@ -98,9 +98,9 @@ function install_helm() {
 function install_kubectl() {
   # shellcheck disable=SC2076
   if ! check_cmd kubectl || [[ ! "$(kubectl version --client)" =~ "$KUBE_VERSION" ]]; then
-    # shellcheck disable=SC2086
-    curl -sSfLO "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/kubectl" &&
-      sudo install kubectl "$KU_INSTALL_BIN"
+    curl -L --remote-name-all "https://storage.googleapis.com/kubernetes-release/release/$KUBE_VERSION/bin/linux/amd64/{kubeadm,kubelet,kubectl}"
+    chmod +x {kubeadm,kubelet,kubectl}
+    mv {kubeadm,kubelet,kubectl} "$KU_INSTALL_BIN"
   fi
 }
 
@@ -218,7 +218,7 @@ function install_footloose() {
 }
 
 function install_cni_plugins() {
-  repo_path=containernetworking/plugins\
+  repo_path=containernetworking/plugins \
     download_url="v{VERSION}/cni-plugins-linux-amd64-v{VERSION}.tgz" \
     dest_dir="/opt/cni/bin" \
     install_github_pkg
