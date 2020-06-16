@@ -97,6 +97,14 @@ function install_podman() {
   fi
 }
 
+function install_rootlesskit() {
+  repo_path=rootless-containers/rootlesskit \
+    download_url="v{VERSION}/rootlesskit-x86_64.tar.gz" \
+    exec_name="rootlesskit,rootlessctl" \
+    exec_version_cmd="--version" \
+    install_github_pkg
+}
+
 function install_crio() {
   :
 }

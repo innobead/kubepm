@@ -144,6 +144,7 @@ function install_github_pkg() {
   mapfile -t exec_names < <(echo "${exec_name//,/$'\n'}")
   local exec_name=${exec_names[0]}
 
+  # for github pkg, validate the missing parameters and prepare some variables
   if [[ $is_github_pkg == "true" ]]; then
     if [[ -z $repo_path ]]; then
       error "No repo_path specified"
@@ -166,6 +167,7 @@ function install_github_pkg() {
     fi
   fi
 
+  # download_url is mandatory
   if [[ -z "$download_url" ]]; then
     error "No download_url specified"
   fi
@@ -174,13 +176,17 @@ function install_github_pkg() {
   declare -a download_urls
   mapfile -t download_urls < <(echo "${download_url//,/$'\n'}")
 
-  pushd "$KU_TMP_DIR"
-
+  # process the download urls
   echo ">>>  ${download_urls[*]}"
-
   for index in "${!download_urls[@]}"; do
     download_url=${download_urls[index]}
-    exec_name=${exec_names[index]}
+
+    declare -a new_exec_names
+    if [[ "${#download_urls[@]}" == "${#exec_names[@]}" ]]; then
+      mapfile -t new_exec_names < <(echo "${exec_name//,/$'\n'}")
+    else
+      new_exec_names+=("${exec_names[@]}")
+    fi
 
     download_url="https://github.com/$repo_path/releases/download/$download_url"
 
@@ -191,69 +197,70 @@ function install_github_pkg() {
     esac
 
     # download the artifact and extract to the destination folder
-    filename=$(basename "$download_url")
-    rm -rf "$filename"
+    download_file=$(basename "$download_url")
+    rm -rf "$download_file"
     curl -sSfLO "$download_url"
 
     local extract_dir=""
 
     case $download_url in
     *.tar.gz)
-      extract_dir=${filename%%.tar.gz}
-      cmd="tar -C $extract_dir -xzf $filename"
+      extract_dir=${download_file%%.tar.gz}
+      extract_cmd="tar -C $extract_dir -xzf $download_file"
       ;;
     *.tgz)
-      extract_dir=${filename%%.tgz}
-      cmd="tar -C $extract_dir -xzf $filename"
+      extract_dir=${download_file%%.tgz}
+      extract_cmd="tar -C $extract_dir -xzf $download_file"
       ;;
     *.zip)
-      extract_dir=${filename%%.zip}
-      cmd="unzip $filename -d $extract_dir"
+      extract_dir=${download_file%%.zip}
+      extract_cmd="unzip $download_file -d $extract_dir"
       ;;
     esac
 
-    # extract files
+    # extract the download file
     if [[ -n "$extract_dir" ]]; then
-      # delete the previsous cache w/o errors
+      # delete the previous cache w/o errors
       rm -rf "$extract_dir" || true
       mkdir "$extract_dir"
-      $cmd
+      $extract_cmd
     fi
 
     (sudo mkdir -p "$dest_dir" && sudo chown -R "$KU_USER" "$dest_dir") || true
 
-    # install executables into destination folder
-    if [[ $filename == *.sh ]]; then
-      chmod +x "$filename"
-      sudo ./"$filename"
+    if [[ ${#new_exec_names[@]} -eq 0 ]]; then
+      sudo cp "$extract_dir"/* "$dest_dir"/
+      continue
+    fi
 
-    elif [[ $filename =~ .*-amd64$ ]] || [[ $filename =~ .*-linux-x86_64$ ]]; then
-      if [[ ! $filename =~ ^$exec_name.* ]]; then
-        error "The name of downloaded file ($filename) does not start with $exec_name"
-      fi
+    for exec_name in "${new_exec_names[@]}"; do
+      # install executables into destination folder
+      if [[ $download_file == *.sh ]]; then
+        chmod +x "$download_file"
+        sudo ./"$download_file"
 
-      chmod +x "$filename" && mv "$filename" "$exec_name"
-      sudo install "$exec_name" "$dest_dir"
+      elif [[ $download_file =~ .*-amd64$ ]] || [[ $download_file =~ .*-linux-x86_64$ ]]; then
+        if [[ ! $download_file =~ ^$exec_name.* ]]; then
+          error "The name of downloaded file ($download_file) does not start with $exec_name"
+        fi
 
-    elif [[ -z "$install_cmd" ]]; then
-      if [[ -n $exec_name ]]; then
+        chmod +x "$download_file" && mv "$download_file" "$exec_name"
+        sudo install "$exec_name" "$dest_dir"
 
+      elif [[ -z "$install_cmd" ]]; then
         f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
         sudo install "$f" "$dest_dir"
 
       else
-        sudo cp "$extract_dir"/* "$dest_dir"/
+        f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
+        sudo ./"$f"
       fi
-    else
-      f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
-      sudo ./"$f"
 
-    fi
+    done
 
-    rm -rf "$extract_dir" "$filename"
+    rm -rf "$extract_dir" "$download_file"
+
   done
-
-  popd
 }
 
 function get_install_functions() {
