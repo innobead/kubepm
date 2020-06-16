@@ -106,9 +106,19 @@ function install_rootlesskit() {
 }
 
 function install_crio() {
-  :
+  # cri-o/cri-o/releases
+  repo_path=cri-o/cri-o \
+    download_url="v{VERSION}/crio-v{VERSION}.tar.gz" \
+    exec_name="crictl" \
+    exec_version_cmd="--version" \
+    install_cmd="make install" \
+    install_github_pkg
 }
 
 function install_containerd() {
-  :
+  repo_path=containerd/containerd \
+    download_url="v{VERSION}/containerd-{VERSION}.linux-amd64.tar.gz" \
+    exec_name="containerd,containerd-shim,containerd-shim-runc-v1,containerd-shim-runc-v2,containerd-stress,ctr" \
+    exec_version_cmd="--version" \
+    install_github_pkg
 }

@@ -206,11 +206,11 @@ function install_github_pkg() {
     case $download_url in
     *.tar.gz)
       extract_dir=${download_file%%.tar.gz}
-      extract_cmd="tar -C $extract_dir -xzf $download_file"
+      extract_cmd="tar -C $extract_dir --strip-components=1 -xzf $download_file"
       ;;
     *.tgz)
       extract_dir=${download_file%%.tgz}
-      extract_cmd="tar -C $extract_dir -xzf $download_file"
+      extract_cmd="tar -C $extract_dir --strip-components=1 -xzf $download_file"
       ;;
     *.zip)
       extract_dir=${download_file%%.zip}
@@ -230,33 +230,39 @@ function install_github_pkg() {
 
     if [[ ${#new_exec_names[@]} -eq 0 ]]; then
       sudo cp "$extract_dir"/* "$dest_dir"/
-      continue
-    fi
 
-    for exec_name in "${new_exec_names[@]}"; do
-      # install executables into destination folder
-      if [[ $download_file == *.sh ]]; then
-        chmod +x "$download_file"
-        sudo ./"$download_file"
+    elif [[ -n "$install_cmd" ]]; then
+      f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
 
-      elif [[ $download_file =~ .*-amd64$ ]] || [[ $download_file =~ .*-linux-x86_64$ ]]; then
-        if [[ ! $download_file =~ ^$exec_name.* ]]; then
-          error "The name of downloaded file ($download_file) does not start with $exec_name"
-        fi
-
-        chmod +x "$download_file" && mv "$download_file" "$exec_name"
-        sudo install "$exec_name" "$dest_dir"
-
-      elif [[ -z "$install_cmd" ]]; then
-        f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
-        sudo install "$f" "$dest_dir"
-
-      else
-        f=$(find "$extract_dir" -name "$install_cmd" | tr -d '\n')
+      if [[ -n "$f" ]]; then
         sudo ./"$f"
+      else
+        cd "$extract_dir" && sudo $install_cmd && cd -
       fi
 
-    done
+    else
+      for exec_name in "${new_exec_names[@]}"; do
+        # install executables into destination folder
+        if [[ $download_file == *.sh ]]; then
+          chmod +x "$download_file"
+          sudo ./"$download_file"
+
+        elif [[ $download_file =~ .*-amd64$ ]] || [[ $download_file =~ .*-linux-x86_64$ ]]; then
+          if [[ ! $download_file =~ ^$exec_name.* ]]; then
+            error "The name of downloaded file ($download_file) does not start with $exec_name"
+          fi
+
+          chmod +x "$download_file" && mv "$download_file" "$exec_name"
+          sudo install "$exec_name" "$dest_dir"
+
+        elif [[ -z "$install_cmd" ]]; then
+          f=$(find "$extract_dir" -name "$exec_name" | tr -d '\n')
+          sudo install "$f" "$dest_dir"
+
+        fi
+
+      done
+    fi
 
     rm -rf "$extract_dir" "$download_file"
 
