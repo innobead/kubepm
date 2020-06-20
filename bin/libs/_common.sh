@@ -161,7 +161,7 @@ function install_github_pkg() {
     if [[ -n $exec_name ]]; then
       # check if already have the latest version
       # shellcheck disable=SC2086
-      if check_cmd "$exec_name" && [[ "$(eval "$exec_name $exec_version_cmd")" =~ $version ]]; then
+      if check_cmd "$exec_name" && [[ "$(eval "$exec_name $exec_version_cmd 2>&1")" =~ $version ]]; then
         return 0
       fi
     fi
